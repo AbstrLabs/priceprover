@@ -33,7 +33,7 @@ public class CLI implements Callable<Integer> {
         // ...
     }
 
-    public static void call(String[] args) {
+    public static void main(String[] args) {
         CLI app = new CLI();
         new CommandLine(app)
                 .setExecutionStrategy(app::executionStrategy)
