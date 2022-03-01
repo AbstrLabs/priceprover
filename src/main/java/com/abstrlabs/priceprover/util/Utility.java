@@ -1,10 +1,16 @@
 package com.abstrlabs.priceprover.util;
 
+import jdk.nashorn.internal.objects.NativeUint8Array;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.math.BigInteger;
-import java.nio.Buffer;
 import java.util.Arrays;
+import java.util.Base64;
 
 public class Utility {
+    private static final Logger log = LogManager.getLogger(Utility.class);
+
     public static byte[] concat(byte[] first, byte[] second) {
         byte[] result = Arrays.copyOf(first, first.length + second.length);
         System.arraycopy(second, 0, result, first.length, second.length);
@@ -75,6 +81,35 @@ public class Utility {
             ret[i] = ((len * 8L) >> ((retLength - i - 1) * 8)) & 0xff;
         }
         return ret;
+    }
+
+    public static long[] base64Decode(String text) {
+        byte[] bytes = Base64.getDecoder().decode(text);
+        long[] res = new long[bytes.length];
+        for (int i = 0; i < res.length; i++) {
+            res[i] = (long) bytes[i] & 0xff;
+            log.debug(i + " : " + res[i]);
+        }
+        return res;
+    }
+
+    public static long[] pubkeyPEMToRaw(String pkPEM) {
+        int[] preasn1 = new int[] {0x30, 0x59, 0x30, 0x13, 0x06, 0x07, 0x2A, 0x86, 0x48, 0xCE, 0x3D, 0x02, 0x01, 0x06,0x08, 0x2A, 0x86, 0x48, 0xCE, 0x3D, 0x03, 0x01, 0x07, 0x03, 0x42, 0x00};
+        String[] lines = pkPEM.split(System.lineSeparator());
+        log.debug(lines);
+        StringBuilder encoded = new StringBuilder();
+        for (String line : lines) {
+            if (line.trim().length() > 0 &&
+                    !line.contains("-BEGIN CERTIFICATE-") &&
+                    !line.contains("-BEGIN PUBLIC KEY-") &&
+                    !line.contains("-END PUBLIC KEY-") &&
+                    !line.contains("-END CERTIFICATE-") ) {
+                encoded.append(line.trim());
+            }
+        }
+        log.debug(encoded);
+        long[] res = base64Decode(encoded.toString());
+        return Arrays.copyOfRange(res, preasn1.length, res.length);
     }
 
 }
