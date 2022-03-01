@@ -60,7 +60,8 @@ public class NotaryJsonParser implements Callable<Integer> {
         notaryCheckInput.exp_ct = new AES128().aes128GcmDecrypt(serverRecords0, notaryCheckInput.cswk, notaryCheckInput.nswk, notaryCheckInput.csiv, notaryCheckInput.nsiv);
         notaryCheckInput.tcp = Utility.padding(Utility.concat(notaryCheckInput.nt, notaryCheckInput.exp_ct));
         // sha256(tcp)
-        notaryCheckInput.exp_hash = new long[] {3451611916L, 778424106L, 1297035016L, 1945110051L, 589686400L, 2837115548L, 2980338592L, 631778133L};
+        notaryCheckInput.exp_hash = new SHA256().sha256Hash(notaryCheckInput.tcp);
+        //new long[] {3451611916L, 778424106L, 1297035016L, 1945110051L, 589686400L, 2837115548L, 2980338592L, 631778133L};
 
 
 //        long[] sr_padded = sr0 + sr1 + padding

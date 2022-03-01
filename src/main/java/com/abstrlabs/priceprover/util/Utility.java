@@ -48,6 +48,18 @@ public class Utility {
         return result;
     }
 
+    public static long[] toLongArray(byte[] byteArr, int size) {
+        long[] result = new long[size];
+        int i = 0;
+        while (i < byteArr.length) {
+            for (int j = 0; j < byteArr.length / size; j++) {
+                result[i / size] += (long) byteArr[i] & 0xff;
+                i++;
+            }
+        }
+        return result;
+    }
+
     public static long[] padding(long[] arr) {
         int len = arr.length;
         int n = len / 64;

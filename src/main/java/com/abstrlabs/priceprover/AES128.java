@@ -1,6 +1,9 @@
 package com.abstrlabs.priceprover;
 
 import com.abstrlabs.priceprover.util.Utility;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -9,6 +12,7 @@ import java.util.Arrays;
 
 public class AES128 {
     public static final int GCM_TAG_LENGTH = 16;
+    private final Logger log = LogManager.getLogger(this.getClass());
 
     public long[] aes128GcmDecrypt(long[] sr_padded, long[] cswk, long[] nswk, long[] csiv, long[] nsiv) throws Exception {
         byte[] server_records0 = Utility.toByteArray(sr_padded);
@@ -37,7 +41,7 @@ public class AES128 {
         // Perform Decryption
         byte[] plainTextArr = cipher.doFinal(data);
         String plainText = new String(plainTextArr);
-        System.out.println(plainText);
+        log.debug(plainText);
 
         int content_start = plainText.indexOf("{");
         int content_end = plainText.lastIndexOf("}");

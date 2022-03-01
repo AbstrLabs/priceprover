@@ -43,6 +43,7 @@ public class NotaryJsonParserTest {
         CommandLine cmd = new CommandLine(app);
         int exitCode = cmd.execute("-nf", "./src/test/resources/notary.json");
         NotaryCheckInput expectedInput = buildExpectedInput();
+//        System.out.println("expected : " + Long.toBinaryString(3451611916L));
         assertEquals(exitCode, 0);
         assertEquals(app.notaryCheckInput, expectedInput);
     }
