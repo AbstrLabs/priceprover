@@ -13,11 +13,6 @@ public class SHA256 {
         byte[] byteArr = Utility.toByteArray(tcp);
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] encodeArr = digest.digest(byteArr);
-//        byte[] test0 = new byte[] {encodeArr[0], encodeArr[1], encodeArr[2], encodeArr[3]};
-//        for (byte i : test0) {
-//            System.out.print(String.format("%8s", Integer.toBinaryString(i & 0xFF)).replace(' ', '0'));
-//        }
-//        long test = new BigInteger(test0).longValue();
 
         return Utility.toLongArray(encodeArr, OUTPUT_SIZE);
     }

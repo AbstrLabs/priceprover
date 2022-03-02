@@ -69,7 +69,6 @@ public class PageSignerCallBack implements Callable<Integer> {
         }
         log.info("The normalized asset name is " + asset);
         return asset;
-
     }
 
     public static void main(String[] args) {

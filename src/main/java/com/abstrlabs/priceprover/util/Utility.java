@@ -1,6 +1,6 @@
 package com.abstrlabs.priceprover.util;
 
-import jdk.nashorn.internal.objects.NativeUint8Array;
+import lombok.experimental.UtilityClass;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -112,4 +112,19 @@ public class Utility {
         return Arrays.copyOfRange(res, preasn1.length, res.length);
     }
 
+    public static String getByteBinaryString(byte b) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 7; i >= 0; --i) {
+            sb.append(b >>> i & 1);
+        }
+        return sb.toString();
+    }
+
+    public static String getByteBinaryString(int b) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 31; i >= 0; --i) {
+            sb.append(b >>> i & 1);
+        }
+        return sb.toString();
+    }
 }
