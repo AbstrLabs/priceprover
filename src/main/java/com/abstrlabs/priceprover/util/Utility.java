@@ -8,22 +8,23 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Base64;
 
+@UtilityClass
 public class Utility {
-    private static final Logger log = LogManager.getLogger(Utility.class);
+    private final Logger log = LogManager.getLogger(Utility.class);
 
-    public static byte[] concat(byte[] first, byte[] second) {
+    public byte[] concat(byte[] first, byte[] second) {
         byte[] result = Arrays.copyOf(first, first.length + second.length);
         System.arraycopy(second, 0, result, first.length, second.length);
         return result;
     }
 
-    public static long[] concat(long[] first, long[] second) {
+    public long[] concat(long[] first, long[] second) {
         long[] result = Arrays.copyOf(first, first.length + second.length);
         System.arraycopy(second, 0, result, first.length, second.length);
         return result;
     }
 
-    public static byte[] xor(byte[] arr1, byte[] arr2) {
+    public byte[] xor(byte[] arr1, byte[] arr2) {
         byte[] result = new byte[arr1.length];
 
         int i = 0;
@@ -34,7 +35,7 @@ public class Utility {
         return result;
     }
 
-    public static long[] toLongArray(byte[] arr) {
+    public long[] toLongArray(byte[] arr) {
         long[] result = new long[arr.length];
         for (int i = 0; i < result.length; i++) {
             result[i] = (long) arr[i] & 0xff;
@@ -42,11 +43,11 @@ public class Utility {
         return result;
     }
 
-    public static byte[] toByteArray(int num) {
+    public byte[] toByteArray(int num) {
         return BigInteger.valueOf(num).toByteArray();
     }
 
-    public static byte[] toByteArray(long[] arr) {
+    public byte[] toByteArray(long[] arr) {
         byte[] result = new byte[arr.length];
         for (int i = 0; i < arr.length; i++) {
             result[i] = (byte) arr[i];
@@ -54,7 +55,7 @@ public class Utility {
         return result;
     }
 
-    public static long[] toLongArray(byte[] byteArr, int size) {
+    public long[] toLongArray(byte[] byteArr, int size) {
         long[] result = new long[size];
         int i = 0;
         while (i < byteArr.length) {
@@ -66,7 +67,7 @@ public class Utility {
         return result;
     }
 
-    public static long[] padding(long[] arr) {
+    public long[] padding(long[] arr) {
         int len = arr.length;
         int n = len / 64;
         int mod = len % 64;
@@ -83,7 +84,7 @@ public class Utility {
         return ret;
     }
 
-    public static long[] base64Decode(String text) {
+    public long[] base64Decode(String text) {
         byte[] bytes = Base64.getDecoder().decode(text);
         long[] res = new long[bytes.length];
         for (int i = 0; i < res.length; i++) {
@@ -93,7 +94,7 @@ public class Utility {
         return res;
     }
 
-    public static long[] pubkeyPEMToRaw(String pkPEM) {
+    public long[] pubkeyPEMToRaw(String pkPEM) {
         int[] preasn1 = new int[] {0x30, 0x59, 0x30, 0x13, 0x06, 0x07, 0x2A, 0x86, 0x48, 0xCE, 0x3D, 0x02, 0x01, 0x06,0x08, 0x2A, 0x86, 0x48, 0xCE, 0x3D, 0x03, 0x01, 0x07, 0x03, 0x42, 0x00};
         String[] lines = pkPEM.split(System.lineSeparator());
         log.debug(lines);
@@ -112,7 +113,7 @@ public class Utility {
         return Arrays.copyOfRange(res, preasn1.length, res.length);
     }
 
-    public static String getByteBinaryString(byte b) {
+    public String getByteBinaryString(byte b) {
         StringBuilder sb = new StringBuilder();
         for (int i = 7; i >= 0; --i) {
             sb.append(b >>> i & 1);
@@ -120,7 +121,7 @@ public class Utility {
         return sb.toString();
     }
 
-    public static String getByteBinaryString(int b) {
+    public String getByteBinaryString(int b) {
         StringBuilder sb = new StringBuilder();
         for (int i = 31; i >= 0; --i) {
             sb.append(b >>> i & 1);
