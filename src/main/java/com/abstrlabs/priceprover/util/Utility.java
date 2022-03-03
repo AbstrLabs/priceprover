@@ -5,23 +5,30 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.List;
 
 @UtilityClass
 public class Utility {
     private final Logger log = LogManager.getLogger(Utility.class);
 
-    public byte[] concat(byte[] first, byte[] second) {
-        byte[] result = Arrays.copyOf(first, first.length + second.length);
-        System.arraycopy(second, 0, result, first.length, second.length);
-        return result;
+    public byte[] concat(List<byte[]> arrays) {
+        int len = arrays.stream().mapToInt(a -> a.length).sum();
+        ByteBuffer result = ByteBuffer.allocate(len);
+        for (byte[] bytes : arrays) {
+            result.put(bytes);
+        }
+
+        return result.array();
     }
 
-    public long[] concat(long[] first, long[] second) {
-        long[] result = Arrays.copyOf(first, first.length + second.length);
-        System.arraycopy(second, 0, result, first.length, second.length);
-        return result;
+    public long[] concat(long[] ...arrays) {
+        return Arrays.stream(arrays)
+                .flatMapToLong(Arrays::stream)
+                .toArray();
     }
 
     public byte[] xor(byte[] arr1, byte[] arr2) {
@@ -56,11 +63,13 @@ public class Utility {
     }
 
     public long[] toLongArray(byte[] byteArr, int size) {
-        long[] result = new long[size];
+        long[] result = new long[byteArr.length / size];
         int i = 0;
         while (i < byteArr.length) {
-            for (int j = 0; j < byteArr.length / size; j++) {
-                result[i / size] += (long) byteArr[i] & 0xff;
+            result[i / size] = byteArr[i] & 0xff;
+            i++;
+            for (int j = 1; j < size; j++) {
+                result[i / size] = (result[i / size] << 8) + (byteArr[i] & 0xff);
                 i++;
             }
         }
@@ -86,12 +95,7 @@ public class Utility {
 
     public long[] base64Decode(String text) {
         byte[] bytes = Base64.getDecoder().decode(text);
-        long[] res = new long[bytes.length];
-        for (int i = 0; i < res.length; i++) {
-            res[i] = (long) bytes[i] & 0xff;
-            log.debug(i + " : " + res[i]);
-        }
-        return res;
+        return toLongArray(bytes);
     }
 
     public long[] pubkeyPEMToRaw(String pkPEM) {
@@ -121,7 +125,7 @@ public class Utility {
         return sb.toString();
     }
 
-    public String getByteBinaryString(int b) {
+    public String getByteBinaryString(long b) {
         StringBuilder sb = new StringBuilder();
         for (int i = 31; i >= 0; --i) {
             sb.append(b >>> i & 1);
