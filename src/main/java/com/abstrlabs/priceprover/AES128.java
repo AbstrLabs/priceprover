@@ -7,7 +7,6 @@ import org.apache.logging.log4j.Logger;
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 
@@ -23,10 +22,11 @@ public class AES128 {
         byte[] notary_siv_share = Utility.toByteArray(nsiv);
         byte[] iv = Utility.xor(client_siv_share, notary_siv_share);
         byte[] key = Utility.xor(client_swk_share, notary_swk_share);
-        byte[] nonce = Utility.concat(new ArrayList<> (Arrays.asList(iv, Arrays.copyOfRange(server_records0, 0, 8))));
-        byte[] tmp = new byte[] {(byte) 0x17, (byte) 0x03, (byte) 0x03};
+        byte[] server_records_head = Arrays.copyOfRange(server_records0, 0, 8);
+        byte[] tmp1 = new byte[]{(byte) 0x17, (byte) 0x03, (byte) 0x03};
         byte[] tmp2 = Utility.toByteArray(server_records0.length - 8 - 16);
-        byte[] aad = Utility.concat(new ArrayList<> (Arrays.asList(Arrays.copyOfRange(server_records0, 0, 8), tmp, tmp2)));
+        byte[] nonce = Utility.concat(iv, server_records_head);
+        byte[] aad = Utility.concat(server_records_head, tmp1, tmp2);
         byte[] data = Arrays.copyOfRange(server_records0, 8, server_records0.length);
 
         // Get Cipher Instance

@@ -3,20 +3,17 @@ package com.abstrlabs.priceprover;
 import com.abstrlabs.priceprover.util.Utility;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 import java.io.File;
-import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.Callable;
 
+@Log4j2
 @Command(name = "notaryparser", description = "Parse notary json from pagesinger")
 public class NotaryJsonParser implements Callable<Integer> {
-
-    private final Logger log = LogManager.getLogger(this.getClass());
 
     public NotaryCheckInput notaryCheckInput = new NotaryCheckInput();
 
@@ -35,7 +32,7 @@ public class NotaryJsonParser implements Callable<Integer> {
         JsonNode root = mapper.readTree(notaryFile);
         long[] serverRecords0 = Utility.base64Decode(root.get("server response records").get("0").asText());
         long[] serverRecords1 = Utility.base64Decode(root.get("server response records").get("1").asText());
-
+        long[] serverEcPubkey = Utility.base64Decode(root.get("server pubkey for ECDHE").asText());
         notaryCheckInput.ccwk = Utility.base64Decode(root.get("client client_write_key share").asText());
         notaryCheckInput.cciv = Utility.base64Decode(root.get("client client_write_iv share").asText());
         notaryCheckInput.cswk = Utility.base64Decode(root.get("client server_write_key share").asText());
@@ -56,7 +53,6 @@ public class NotaryJsonParser implements Callable<Integer> {
         notaryCheckInput.crc_len = notaryCheckInput.crc.length;
         notaryCheckInput.sr_padded = Utility.padding(Utility.concat(serverRecords0, serverRecords1));
         notaryCheckInput.sr_padded_len = notaryCheckInput.sr_padded.length / 64;
-        long[] serverEcPubkey = Utility.base64Decode(root.get("server pubkey for ECDHE").asText());
         notaryCheckInput.tbs1_padded = Utility.padding(getTbs1(serverRecords0, serverRecords1, notaryCheckInput.ccwk, notaryCheckInput.cciv, notaryCheckInput.cswk, notaryCheckInput.csiv,
                 notaryCheckInput.cpms, notaryCheckInput.crc, serverEcPubkey, notaryCheckInput.npms, notaryCheckInput.ncwk, notaryCheckInput.nciv, notaryCheckInput.nswk,
                 notaryCheckInput.nsiv, notaryCheckInput.nt));
@@ -64,28 +60,27 @@ public class NotaryJsonParser implements Callable<Integer> {
         notaryCheckInput.exp_ct = new AES128().aes128GcmDecrypt(serverRecords0, notaryCheckInput.cswk, notaryCheckInput.nswk, notaryCheckInput.csiv, notaryCheckInput.nsiv);
         notaryCheckInput.tcp = Utility.padding(Utility.concat(notaryCheckInput.nt, notaryCheckInput.exp_ct));
         notaryCheckInput.exp_hash = new SHA256().sha256Hash(Utility.concat(notaryCheckInput.nt, notaryCheckInput.exp_ct), 4);
-
         return 0;
     }
 
     private long[] getTbs1(long[] serverRecords0, long[] serverRecords1, long[] clientCwkShare, long[] clientCivShare, long[] clientSwkShare, long[] clientSivShare,
                            long[] clientPMSShare, long[] clientReqCipher, long[] serverEcPubkey, long[] notaryPMSShare, long[] notaryCwkShare, long[] notaryCivShare,
-                           long[] notarySwkShare, long[] notarySivShare, long[] notaryTime) throws NoSuchAlgorithmException {
+                           long[] notarySwkShare, long[] notarySivShare, long[] notaryTime){
         long[] commitHash = new SHA256().sha256Hash(Utility.concat(serverRecords0, serverRecords1), 1);
         long[] keyShareHash = new SHA256().sha256Hash(Utility.concat(clientCwkShare, clientCivShare, clientSwkShare, clientSivShare), 1);
         long[] pmsShareHash = new SHA256().sha256Hash(clientPMSShare, 1);
         return Utility.concat(
-              commitHash,
-              keyShareHash,
-              pmsShareHash,
-              clientReqCipher,
-              serverEcPubkey,
-              notaryPMSShare,
-              notaryCwkShare,
-              notaryCivShare,
-              notarySwkShare,
-              notarySivShare,
-              notaryTime);
+                commitHash,
+                keyShareHash,
+                pmsShareHash,
+                clientReqCipher,
+                serverEcPubkey,
+                notaryPMSShare,
+                notaryCwkShare,
+                notaryCivShare,
+                notarySwkShare,
+                notarySivShare,
+                notaryTime);
     }
 
     public static void main(String[] args) {

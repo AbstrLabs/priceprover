@@ -1,8 +1,7 @@
 package com.abstrlabs.priceprover;
 
 import com.abstrlabs.priceprover.util.CommandExecutor;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -12,11 +11,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 
-
+@Log4j2
 @Command(name = "pagesigner", description = "Trigger pagesigner-cli and generate a stock price notray json")
 public class PageSignerCallBack implements Callable<Integer> {
-
-    private final Logger log = LogManager.getLogger(this.getClass());
 
     @Option(names = {"-as", "--asset"}, defaultValue = "aIBM", description = "the asset name used to obtain the price data jason and the notary file via PageSinger.")
     String asset;

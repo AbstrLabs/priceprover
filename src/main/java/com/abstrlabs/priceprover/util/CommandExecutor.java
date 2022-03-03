@@ -1,16 +1,15 @@
 package com.abstrlabs.priceprover.util;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+@Log4j2
 public class CommandExecutor {
-    private static Logger log = LogManager.getLogger(CommandExecutor.class.getName());
 
-    public boolean execute (String[] commands) {
+    public boolean execute(String[] commands) {
         try {
             Runtime rt = Runtime.getRuntime();
             Process proc = rt.exec(commands);
@@ -28,7 +27,7 @@ public class CommandExecutor {
             while ((s = stdInput.readLine()) != null) {
                 log.info(s);
             }
-//             Read any errors from the attempted command
+            // Read any errors from the attempted command
             if ((s = stdError.readLine()) != null) {
                 success = false;
                 log.debug("Here is the standard error of the c:\n");
@@ -37,11 +36,9 @@ public class CommandExecutor {
             while ((s = stdError.readLine()) != null) {
                 log.error(s);
             }
-
-
             return success;
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e);
             return false;
         }
 

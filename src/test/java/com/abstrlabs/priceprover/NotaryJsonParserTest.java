@@ -1,14 +1,11 @@
 package com.abstrlabs.priceprover;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import picocli.CommandLine;
 
 import static org.junit.Assert.assertEquals;
 
 public class NotaryJsonParserTest {
-    private final Logger log = LogManager.getLogger(this.getClass());
 
     private NotaryCheckInput buildExpectedInput() {
         NotaryCheckInput in = new NotaryCheckInput();
