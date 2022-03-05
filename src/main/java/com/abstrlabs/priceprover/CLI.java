@@ -6,7 +6,7 @@ import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "priceprover", subcommands = {
         PageSignerCallBack.class,
-        NotaryJsonParser.class})
+        CircuitBuilder.class})
 public class CLI implements Callable<Integer> {
     public Integer call() {
         /* todo: wrap up all the steps:

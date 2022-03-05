@@ -7,16 +7,19 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
-import java.util.Base64;
 
 @Log4j2
 @UtilityClass
 public class Utility {
 
-    public byte[] concat(byte[]... arrays) throws IOException {
+    public byte[] concat(byte[]... arrays) {
         ByteArrayOutputStream byte_stream = new ByteArrayOutputStream();
-        for (byte[] array : arrays) {
-            byte_stream.write(array);
+        try {
+            for (byte[] array : arrays) {
+                byte_stream.write(array);
+            }
+        } catch (IOException e) {
+            log.error(e);
         }
         return byte_stream.toByteArray();
     }
@@ -29,12 +32,10 @@ public class Utility {
 
     public byte[] xor(byte[] arr1, byte[] arr2) {
         byte[] result = new byte[arr1.length];
-
         int i = 0;
         for (byte b : arr1) {
             result[i] = (byte) (b ^ arr2[i++]);
         }
-
         return result;
     }
 
@@ -89,11 +90,6 @@ public class Utility {
         return ret;
     }
 
-    public long[] base64Decode(String text) {
-        byte[] bytes = Base64.getDecoder().decode(text);
-        return toLongArray(bytes);
-    }
-
     public long[] pubkeyPEMToRaw(String pkPEM) {
         int[] preasn1 = new int[]{0x30, 0x59, 0x30, 0x13, 0x06, 0x07, 0x2A, 0x86, 0x48, 0xCE, 0x3D, 0x02, 0x01, 0x06, 0x08, 0x2A, 0x86, 0x48, 0xCE, 0x3D, 0x03, 0x01, 0x07, 0x03, 0x42, 0x00};
         String[] lines = pkPEM.split(System.lineSeparator());
@@ -109,7 +105,7 @@ public class Utility {
             }
         }
         log.debug(encoded);
-        long[] res = base64Decode(encoded.toString());
+        long[] res = Crypto.base64Decode(encoded.toString());
         return Arrays.copyOfRange(res, preasn1.length, res.length);
     }
 
