@@ -11,36 +11,50 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
 
 @Log4j2
-@Command(name = "preprocess", description = "Parse the notary json from pagesinger, do the preprocess, and build the circuit by xjsnark")
+@Command(name = "build", mixinStandardHelpOptions = true, description = "Parse the notary json from pagesinger, and build the circuit/input by xjsnark")
 public class CircuitBuilder implements Callable<Integer> {
 
     public NotaryCheckInput notaryCheckInput = new NotaryCheckInput();
 
-    private final String NOTARY_PUBKEY = "-----BEGIN PUBLIC KEY-----\n" +
+    private static final String NOTARY_FILE_NAME = "notary.json";
+    private static final String NOTARY_PUBKEY = "-----BEGIN PUBLIC KEY-----\n" +
             "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEAp3iALChsj8lOkEpY1F5BeCMcyd6\n" +
             "282weDfsNf8lMYi7xEVVVq0W+is27cCnHZAc0resZHTdX4KoSrFgehhPcA==\n" +
             "-----END PUBLIC KEY-----";
     // recent notary pubkey (22-3-5), keep the old pubkey for test
     // "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEdxg4idfkVEnjIwW8OwNtg9rG0EmajcIR3P6dmq10ZZBFxkTUCPX5BkrFT0cIFAWp2FU9Jt30pl4W4E7UEaDX+g==";
 
-    @Option(names = {"-nf", "--notaryfile"}, defaultValue = "./out/notary.json", description = "decode and preprocess notary json.")
-    String notaryFilePath;
-
     @Option(names = {"-op", "--outputPath"}, defaultValue = "./out", description = "output path for generated headers and notary files")
     String outputPath;
 
+    @Option(names = {"-nf", "--notaryfile"}, description = "notary file that usually named notary.json")
+    String notaryFilePath;
+
+    @CommandLine.Option(names = {"-fi", "--firstTime"}, description = "if it is first time run")
+    boolean firstTime;
+
     @Override
     public Integer call() throws Exception {
+        if (notaryFilePath == null) {
+            notaryFilePath = String.valueOf(Paths.get(outputPath, NOTARY_FILE_NAME));
+        }
+
         // parse notary json
         parseNotaryJson(notaryFilePath);
 
         // build circuit
-        new TLSNotaryCheck(notaryCheckInput, outputPath);
-
+        if (firstTime) {
+            new TLSNotaryCheck(notaryCheckInput, outputPath);
+        } else {
+            // todo: only translate input
+            new TLSNotaryCheck(notaryCheckInput, outputPath);
+        }
         return 0;
     }
 

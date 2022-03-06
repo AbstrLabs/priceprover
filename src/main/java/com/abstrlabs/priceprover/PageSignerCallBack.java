@@ -9,11 +9,15 @@ import picocli.CommandLine.Option;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.Callable;
 
 @Log4j2
-@Command(name = "pagesigner", description = "Call pagesigner-cli and generate a stock price notray json")
+@Command(name = "notarize", description = "Call pagesigner-cli and notarize the stock price")
 public class PageSignerCallBack implements Callable<Integer> {
+
+    private static final String HEADERS = "headers";
 
     @Option(names = {"-as", "--asset"}, defaultValue = "aIBM", description = "the asset name used to obtain the price data jason and the notary file via PageSinger.")
     String asset;
@@ -26,9 +30,8 @@ public class PageSignerCallBack implements Callable<Integer> {
         String assetName = normalizeAssetName(asset);
 
         try {
-            //generate header.txt
-            String currentWorkingDir = System.getProperty("user.dir");
-            String headersPath = currentWorkingDir + "/headers.txt";
+            // generate header.txt
+            String headersPath = String.valueOf(Paths.get(outputPath, HEADERS));
             String content = "GET /query?function=GLOBAL_QUOTE&symbol=" + assetName + "&apikey=demo HTTP/1.1\n" +
                     "Host: www.alphavantage.co";
             File headersFile = new File(headersPath);
@@ -39,7 +42,7 @@ public class PageSignerCallBack implements Callable<Integer> {
             headersWriter.write(content);
             headersWriter.close();
 
-            //call pagesigner-cli
+            // call pagesigner-cli
             String[] pagesignerCommand = new String[]{"./depends/pagesigner-cli/pgsg-node.js", "notarize", "www.alphavantage.co", "--headers", headersPath, outputPath};
             CommandExecutor ce = new CommandExecutor();
             String missionName = "Call pagesigner-cli";
@@ -64,7 +67,7 @@ public class PageSignerCallBack implements Callable<Integer> {
         if (asset.length() > 1 && asset.charAt(0) == 'a') {
             asset =  asset.substring(1);
         }
-        log.info("The normalized asset name is " + asset);
+        log.debug("The normalized asset name is " + asset);
         return asset;
     }
 

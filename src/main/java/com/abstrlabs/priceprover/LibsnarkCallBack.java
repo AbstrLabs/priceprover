@@ -8,7 +8,7 @@ import java.nio.file.Paths;
 import java.util.concurrent.Callable;
 
 @Log4j2
-@CommandLine.Command(name = "libsnark", description = "Trigger libsnark and generate the proof")
+@CommandLine.Command(name = "prove", mixinStandardHelpOptions = true, description = "Trigger libsnark and generate the proof")
 public class LibsnarkCallBack implements Callable<Integer> {
 
     private static final String CIRCUIT_NAME = "priceProver.circuit";
@@ -21,6 +21,8 @@ public class LibsnarkCallBack implements Callable<Integer> {
     private static final String GENERATE = "generate";
     private static final String PROVE = "prove";
 
+    @CommandLine.Option(names = {"-op", "--outputPath"}, defaultValue = "./out", description = "output path for generated headers and notary files")
+    String outputPath;
 
     @CommandLine.Option(names = {"-xc", "--xjsnarkCircuit"}, defaultValue = "./out/TLSNotaryCheck.arith", description = "the xjsnark generated circuit")
     String xjsnarkCircuit;
@@ -28,10 +30,7 @@ public class LibsnarkCallBack implements Callable<Integer> {
     @CommandLine.Option(names = {"-xi", "--xjsnarkInput"}, defaultValue = "./out/TLSNotaryCheck_Sample_Run1.in", description = "the xjsnark generated input")
     String xjsnarkInput;
 
-    @CommandLine.Option(names = {"-op", "--outputPath"}, defaultValue = "./out", description = "output path for generated headers and notary files")
-    String outputPath;
-
-    @CommandLine.Option(names = {"-fi", "--firstTime"}, description = "first time run the circuit")
+    @CommandLine.Option(names = {"-fi", "--firstTime"}, description = "if it is first time run")
     boolean firstTime;
 
     @Override

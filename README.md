@@ -16,32 +16,34 @@ create a transaction payload: call price contract’s submit_price method, with 
 ### Usage
 This CLI is built on [picocli](https://www.picocli.info).
 
+(Optional) define an alias:
 
-#### trigger pagersigner-cli
+```alias priceprover='java -cp priceprover-0.0.2.jar com.abstrlabs.priceprover.PriceProver```
 
-This step will normalize the asset name to the ones supported by our selected API: Alphadvantage. E.g. aIBM → IBM
-Generate a headers.txt that contains HTTP request to stock price API
-Invoke pagersigner-cli and output the notary file.
-
-CLI usage (for now, will be improved soon):
+Usage: `priceprover [-hVv] [-fi] [-as=<asset>] [-op=<outputPath>] [COMMAND]`
 ```
-java -cp priceprover-0.0.1.jar com.abstrlabs.priceprover.PageSignerCallBack -as aIBM -op ./out
+given the stock symbol, notarize the price and generate the proof
+
+-as, --asset           the asset name used to obtain the price data.
+
+-fi, --firstTime       if it is first time run
+
+-h, --help             show help message and exit.
+
+-op, --outputPath      output path for generated files
+
+-v, --verbose          specify multiple -v options to increase verbosity.
+                       for example, `-v` - info, '-vv' - debug,'-vvv' -trace
+                       
+-V, --version          print version information and exit.
+
+SubCommands:
+notarize  Call pagesigner-cli and notarize the stock price
+build     Parse the notary json from pagesinger, and build the circuit/input
+by xjsnark
+prove     Trigger libsnark and generate the proof
 ```
-This is quite verbose. You can define an alias. For example:
 
-```alias pagesigner='java -cp priceprover-0.0.1.jar com.abstrlabs.priceprover.PageSignerCallBack```
-
-#### notary json parser
-This step could parse the notary.json and get the required input java objects.
-
-CLI usage :
-```
-java -cp priceprover-0.0.1.jar com.abstrlabs.priceprover.NotaryJsonParser -nf ./out/notary.json
-```
-
-### Todo
-- [ ] *update the rest steps and cli usage*
-- [ ] *combine submodules together*
 
 ### Build
 (Please install [maven](https://maven.apache.org/guides/getting-started/maven-in-five-minutes.html) if you haven't). To build an executable jar:
@@ -49,5 +51,9 @@ java -cp priceprover-0.0.1.jar com.abstrlabs.priceprover.NotaryJsonParser -nf ./
 `mvn clean compile assembly:single`
 
 ### Q&A
+
+#### Cannot run program "./depends/libsnark/run_ppzksnark": error=13, Permission denied
+Try
+`chmod u+x ./depends/libsnark/run_ppzksnark`
 
 ### References
