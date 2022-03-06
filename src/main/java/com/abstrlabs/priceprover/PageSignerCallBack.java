@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.concurrent.Callable;
 
 @Log4j2
-@Command(name = "pagesigner", description = "Trigger pagesigner-cli and generate a stock price notray json")
+@Command(name = "pagesigner", description = "Call pagesigner-cli and generate a stock price notray json")
 public class PageSignerCallBack implements Callable<Integer> {
 
     @Option(names = {"-as", "--asset"}, defaultValue = "aIBM", description = "the asset name used to obtain the price data jason and the notary file via PageSinger.")
@@ -42,17 +42,17 @@ public class PageSignerCallBack implements Callable<Integer> {
             //call pagesigner-cli
             String[] pagesignerCommand = new String[]{"./depends/pagesigner-cli/pgsg-node.js", "notarize", "www.alphavantage.co", "--headers", headersPath, outputPath};
             CommandExecutor ce = new CommandExecutor();
-            if (ce.execute(pagesignerCommand)) {
-                log.info("Triggered pagesigner-cli successfully and saved the notary file into path:" + outputPath);
+            String missionName = "Call pagesigner-cli";
+            if (ce.execute(missionName, pagesignerCommand)) {
+                log.info("saved the notary file into path:" + outputPath);
                 return 0;
             } else {
-                log.warn("pagesigner callback failed");
-                return 1;
+                return -1;
             }
 
         } catch (IOException e) {
             e.printStackTrace();
-            return 2;
+            return -2;
         }
     }
 

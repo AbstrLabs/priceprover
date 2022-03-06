@@ -3,8 +3,6 @@ package com.abstrlabs.priceprover;
 import org.junit.Test;
 import picocli.CommandLine;
 
-import java.io.IOException;
-
 import static org.junit.Assert.assertEquals;
 
 public class CircuitBuilderTest {

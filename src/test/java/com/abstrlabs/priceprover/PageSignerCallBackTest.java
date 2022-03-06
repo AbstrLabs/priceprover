@@ -5,9 +5,6 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import picocli.CommandLine;
 
-/**
- * Unit test for simple App.
- */
 public class PageSignerCallBackTest {
     @Test
     public void callPageSignerWithAsset() {

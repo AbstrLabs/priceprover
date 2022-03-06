@@ -4,14 +4,14 @@ import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 
 @Log4j2
 public class CommandExecutor {
 
     @SneakyThrows
-    public boolean execute(String[] commands) {
+    public boolean execute(String missionName, String[] commands) {
+        log.info(missionName + " start");
         Runtime rt = Runtime.getRuntime();
         Process proc = rt.exec(commands);
         boolean success = true;
@@ -24,24 +24,22 @@ public class CommandExecutor {
 
         String s;
         // Read the output from the command
-        log.info("Here is the standard output of the command:\n");
         while ((s = stdInput.readLine()) != null) {
-            log.info(s);
+            log.debug(s);
         }
         // Read any errors from the attempted command
         if ((s = stdError.readLine()) != null) {
             success = false;
-            log.debug("Here is the standard error of the c:\n");
-            log.debug(s);
+            log.error(missionName + " failed");
+            log.error(s);
         }
         while ((s = stdError.readLine()) != null) {
             log.error(s);
         }
-        return success;
-    }
 
-    public static void main(String[] args) {
-        CommandExecutor ce = new CommandExecutor();
-        ce.execute(args);
+        if (success) {
+            log.info(missionName + " successfully");
+        }
+        return success;
     }
 }
