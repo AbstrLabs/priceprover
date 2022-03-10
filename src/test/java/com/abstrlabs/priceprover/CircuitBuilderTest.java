@@ -45,6 +45,14 @@ public class CircuitBuilderTest {
     }
 
     @Test
+    public void callCircuitBuilder(){
+        CircuitBuilder app = new CircuitBuilder();
+        CommandLine cmd = new CommandLine(app);
+        int exitCode = cmd.execute("-nf", "./src/test/resources/notary.json");
+        assertEquals(exitCode, 0);
+    }
+
+    @Test
     public void callCircuitBuilderWithFreshData() {
         CircuitBuilder app = new CircuitBuilder();
         CommandLine cmd = new CommandLine(app);
