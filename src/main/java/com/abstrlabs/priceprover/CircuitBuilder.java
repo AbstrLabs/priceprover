@@ -89,9 +89,11 @@ public class CircuitBuilder implements Callable<Integer> {
                 notaryCheckInput.cpms, notaryCheckInput.crc, serverEcPubkey, notaryCheckInput.npms, notaryCheckInput.ncwk, notaryCheckInput.nciv, notaryCheckInput.nswk,
                 notaryCheckInput.nsiv, notaryCheckInput.nt));
         notaryCheckInput.np = Utility.pubkeyPEMToRaw(NOTARY_PUBKEY);
-        notaryCheckInput.exp_ct = getExpectedContent(serverRecords0, notaryCheckInput.cswk, notaryCheckInput.nswk, notaryCheckInput.csiv, notaryCheckInput.nsiv);
+        String plainText = getPlainText(serverRecords0, notaryCheckInput.cswk, notaryCheckInput.nswk, notaryCheckInput.csiv, notaryCheckInput.nsiv);
+        notaryCheckInput.exp_ct = getExpectedContent(plainText);
         notaryCheckInput.tcp = Utility.padding(Utility.concat(notaryCheckInput.nt, notaryCheckInput.exp_ct));
         notaryCheckInput.exp_hash = Crypto.sha256Hash(Utility.concat(notaryCheckInput.nt, notaryCheckInput.exp_ct), 4);
+        notaryCheckInput.cts = plainText.indexOf("{");
     }
 
     private long[] getTbs1(long[] serverRecords0, long[] serverRecords1, long[] clientCwkShare, long[] clientCivShare, long[] clientSwkShare, long[] clientSivShare,
@@ -114,7 +116,7 @@ public class CircuitBuilder implements Callable<Integer> {
                 notaryTime);
     }
 
-    public long[] getExpectedContent(long[] sr_padded, long[] cswk, long[] nswk, long[] csiv, long[] nsiv){
+    public String getPlainText(long[] sr_padded, long[] cswk, long[] nswk, long[] csiv, long[] nsiv){
 
         byte[] server_records0 = Utility.toByteArray(sr_padded);
         byte[] client_swk_share = Utility.toByteArray(cswk);
@@ -130,6 +132,13 @@ public class CircuitBuilder implements Callable<Integer> {
         byte[] aad = Utility.concat(server_records_head, tmp1, tmp2);
         byte[] data = Arrays.copyOfRange(server_records0, 8, server_records0.length);
         return Crypto.aes128GcmDecrypt(key, nonce, aad, data);
+    }
+
+    public long[] getExpectedContent(String plainText) {
+        int content_start = plainText.indexOf("{");
+        int content_end = plainText.lastIndexOf("}");
+        byte[] content = Arrays.copyOfRange(plainText.getBytes(), content_start, content_end + 1);
+        return Utility.toLongArray(content);
     }
 
     public static void main(String[] args) {

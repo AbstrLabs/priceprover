@@ -24,7 +24,7 @@ public class Crypto {
     }
 
     @SneakyThrows
-    public long[] aes128GcmDecrypt(byte[] key, byte[] nonce, byte[] aad, byte[] data){
+    public String aes128GcmDecrypt(byte[] key, byte[] nonce, byte[] aad, byte[] data){
         final int GCM_TAG_LENGTH = 16;
         // Get Cipher Instance
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
@@ -39,10 +39,7 @@ public class Crypto {
         byte[] plainTextArr = cipher.doFinal(data);
         String plainText = new String(plainTextArr);
         log.debug(plainText);
-        int content_start = plainText.indexOf("{");
-        int content_end = plainText.lastIndexOf("}");
-        byte[] content = Arrays.copyOfRange(plainTextArr, content_start, content_end + 1);
-        return Utility.toLongArray(content);
+        return plainText;
     }
 
     public long[] base64Decode(String text) {

@@ -28,4 +28,5 @@ public class NotaryCheckInput {
     long[] tcp;
     long[] exp_hash;
     int crc_len;
+    int cts;
 }
