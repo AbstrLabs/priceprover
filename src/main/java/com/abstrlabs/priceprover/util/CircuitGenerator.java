@@ -1,4 +1,4 @@
-package com.abstrlabs.circuitbuilder;
+package com.abstrlabs.priceprover.util;
 
 import backend.auxTypes.*;
 import backend.config.Config;
@@ -6,15 +6,16 @@ import backend.eval.CircuitEvaluator;
 import backend.eval.Instruction;
 import backend.eval.SampleRun;
 import backend.operations.WireLabelInstruction;
-import backend.operations.primitive.AssertBasicOp;
-import backend.operations.primitive.BasicOp;
-import backend.operations.primitive.MulBasicOp;
+import backend.operations.WireLabelInstruction.LabelType;
+import backend.operations.primitive.*;
 import backend.optimizer.CircuitOptimizer;
 import backend.structure.ConstantWire;
 import backend.structure.VariableBitWire;
 import backend.structure.VariableWire;
 import backend.structure.Wire;
+import com.abstrlabs.priceprover.Configs;
 import lombok.SneakyThrows;
+import lombok.extern.log4j.Log4j2;
 import util.Util;
 
 import java.io.BufferedWriter;
@@ -23,46 +24,18 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
+import java.util.regex.Pattern;
 
 
-public abstract class CircuitGenerator extends backend.structure.CircuitGenerator{
-    private static ConcurrentHashMap<Long, CircuitGenerator> __activeCircuitGenerators = new ConcurrentHashMap<>();
-
-    private static CircuitGenerator __instance;
-
-    protected int __currentWireId;
+@Log4j2
+public abstract class CircuitGenerator extends backend.structure.CircuitGenerator {
 
     private LinkedHashMap<Instruction, Instruction> __evaluationQueue;
 
     private LinkedHashMap<Instruction, Instruction> __nonOptimizedEvaluationQueue;
 
     private int __nonOptimalWireCount;
-
-    protected Wire __zeroWire;
-
-    protected Wire __oneWire;
-
-    protected ArrayList<Wire> __inWires;
-
-    protected ArrayList<Wire> __outWires;
-
-    protected ArrayList<Wire> __proverWitnessWires;
-
-    protected ArrayList<IAuxType> __inputAux;
-
-    protected ArrayList<IAuxType> __proverAux;
-
-    protected ArrayList<IAuxType> __verifiedProverAux;
-
-    protected String __circuitName;
-
-    protected HashMap<BigInteger, Wire> __knownConstantWires;
-
     private int __numOfConstraints;
     private int __phase;
     private int __stateCounter;
@@ -77,23 +50,14 @@ public abstract class CircuitGenerator extends backend.structure.CircuitGenerato
     private CircuitEvaluator __circuitEvaluator;
     private Instruction __lastInstructionAdded;
     private CircuitOptimizer __circuitOptimizer;
+    private static final Pattern pattern = Pattern.compile("[< >\t]");
 
     public CircuitGenerator(String circuitName) {
         super(circuitName);
-        this.__circuitName = super.__circuitName;
-
-        __instance = this;
-        this.__inWires = super.__inWires;
-        this.__outWires = super.__outWires;
-        this.__proverWitnessWires = super.__proverWitnessWires;
         this.__evaluationQueue = super.__getEvaluationQueue();
         this.__nonOptimizedEvaluationQueue = this.__evaluationQueue;
-        this.__knownConstantWires = super.__knownConstantWires;
         this.__currentWireId = 0;
         this.__numOfConstraints = 0;
-        this.__inputAux = super.__inputAux;
-        this.__proverAux = super.__proverAux;
-        this.__verifiedProverAux = super.__verifiedProverAux;
         this.__varVariableStateTable = new HashMap<>();
         this.__conditionalStateList = new ArrayList<>();
         this.__memoryStateTable = new HashMap<>();
@@ -103,47 +67,195 @@ public abstract class CircuitGenerator extends backend.structure.CircuitGenerato
         this.__conditionCounter = 0;
     }
 
-
-    public static CircuitGenerator __getActiveCircuitGenerator() {
-        return __instance;
-    }
-
-
     protected void outsource() {
     }
 
-
     public void generateCircuit() {
-        System.out.println("[1st Phase] Running Initial Circuit Analysis for < " + this.__circuitName + " >");
+        log.info("[1st Phase] Running Initial Circuit Analysis for < " + this.__circuitName + " >");
         __phase1();
-        System.out.println("[2nd Phase] Running Circuit Generator for < " + this.__circuitName + " >");
+        log.info("[2nd Phase] Running Circuit Generator for < " + this.__circuitName + " >");
         __phase2();
 
-
         if (Config.multivariateExpressionMinimization) {
-            System.out.println("Initial Circuit Generation Done for < " + this.__circuitName + " >  \n \t Current total number of constraints :  " + __getNumOfConstraints() + "\n");
-            System.out.println("Now: attempting to apply multivariate expression minimization (might take time/require memory depending on how large the circuit is)");
+            log.debug("Initial Circuit Generation Done for < " + this.__circuitName + " >  \n \t Current total number of constraints :  " + __getNumOfConstraints() + "\n");
+            log.debug("Now: attempting to apply multivariate expression minimization (might take time/require memory depending on how large the circuit is)");
             if (!Config.arithOptimizerIncrementalMode) {
-                System.out.println("** Note: If the size of memory is a bottleneck, e.g., the circuit size is very large, enabling Config.arithOptimizerIncrementalMode could help.");
+                log.debug("** Note: If the size of memory is a bottleneck, e.g., the circuit size is very large, enabling Config.arithOptimizerIncrementalMode could help.");
             }
         } else {
-
-            System.out.println("Circuit Generation Done for < " + this.__circuitName + " >  \n \t Total Number of Constraints :  " + __getNumOfConstraints() + "\n");
+            log.info("Circuit Generation Done for < " + this.__circuitName + " >  \n \t Total Number of Constraints :  " + __getNumOfConstraints() + "\n");
         }
 
         this.__nonOptimalWireCount = this.__currentWireId;
         if (Config.multivariateExpressionMinimization) {
             this.__evaluationQueue = __copyEvalSeq(this.__evaluationQueue);
-
             this.__circuitOptimizer = new CircuitOptimizer(this);
         }
 
-
-        if (Config.writeCircuits) {
-            __writeCircuitFile(Config.multivariateExpressionMinimization ? "_optimized" : "");
+        if (Configs.writeCircuits) {
+            __writeCircuitFile();
         }
     }
 
+    public void readCircuitFile() {
+        assert this.__evaluationQueue.isEmpty();
+        declareGenericConstants();
+        try {
+            File circuit = new File(Configs.circuitPath);
+            Scanner circuitReader = new Scanner(circuit);
+            readFileHead(circuitReader);
+            while (circuitReader.hasNextLine()) {
+                String line = circuitReader.nextLine();
+                Instruction in = readFromLine(line);
+                if (in != null) {
+                    __addToEvaluationQueue(in);
+                }
+            }
+            circuitReader.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("read circuit failed");
+            return;
+        }
+        if (!this.__evaluationQueue.isEmpty()) {
+            log.info("read circuit succeed");
+            __init();
+            __defineInputs();
+            __defineVerifiedWitnesses();
+            __defineWitnesses();
+            __checkWitnesses();
+            __defineOutputs();
+        }
+    }
+
+    private void readFileHead(Scanner sc) {
+        sc.next();
+        this.__nonOptimalWireCount = sc.nextInt();
+        sc.nextLine();
+        sc.nextLine();
+    }
+
+
+    private Instruction readFromLine(String line) {
+        Instruction instruction = null;
+        Scanner scanner = new Scanner(line);
+        scanner.useDelimiter(pattern);
+        String type = scanner.next();
+        int wireId;
+        LabelType labelType;
+        Wire[] ins;
+        Wire[] outs;
+        switch (type) {
+            case "input":
+                wireId = scanner.nextInt();
+                labelType = LabelType.input;
+                instruction = new WireLabelInstruction(labelType, new VariableWire(wireId));
+                break;
+            case "nizkinput":
+                wireId = scanner.nextInt();
+                labelType = LabelType.nizkinput;
+                instruction = new WireLabelInstruction(labelType, new VariableWire(wireId));
+                break;
+            case "output":
+                wireId = scanner.nextInt();
+                labelType = LabelType.output;
+                instruction = new WireLabelInstruction(labelType, new VariableWire(wireId));
+                break;
+            default:
+                if (scanner.next().equals("in")) {
+                    int in_n = scanner.nextInt();
+                    ins = scanWireArray(scanner, in_n);
+                } else {
+                    log.error("input instructions reading error");
+                    break;
+                }
+                if (scanner.next().equals("out")) {
+                    int out_n = scanner.nextInt();
+                    outs = scanWireArray(scanner, out_n);
+                } else {
+                    log.error("output instructions reading error");
+                    break;
+                }
+                switch (type) {
+                    case "split":
+                        instruction = new SplitBasicOp(ins[0], outs);
+                        break;
+                    case "xor":
+                        instruction = new XorBasicOp(ins[0], ins[1], outs[0]);
+                        break;
+                    case "pack":
+                        instruction = new PackBasicOp(ins, outs[0]);
+                        break;
+                    case "add":
+                        instruction = new AddBasicOp(ins, outs[0]);
+                        break;
+                    case "mul":
+                        instruction = new MulBasicOp(ins[0], ins[1], outs[0]);
+                        break;
+                    case "or":
+                        instruction = new ORBasicOp(ins[0], ins[1], outs[0]);
+                        break;
+                    case "assert":
+                        instruction = new AssertBasicOp(ins[0], ins[1], outs[0]);
+                        break;
+                    case "zerop":
+                        instruction = new NonZeroCheckBasicOp(ins[0], outs[0], outs[1]);
+                        break;
+                    default:
+                        if (type.startsWith("const-mul-neg-")) {
+                            BigInteger val = new BigInteger(type.substring(14), 16).negate();
+                            instruction = new ConstMulBasicOp(ins[0], outs[0], val);
+                        } else if (type.startsWith("const-mul-")) {
+                            BigInteger val = new BigInteger(type.substring(10), 16);
+                            instruction = new ConstMulBasicOp(ins[0], outs[0], val);
+                        } else {
+                            log.error("unrecognized line");
+                        }
+                }
+        }
+        return instruction;
+    }
+
+    private Wire[] scanWireArray(Scanner sc, int n) {
+        Wire[] array = new Wire[n];
+        for (int i = 0; i < n; i++) {
+            if (sc.hasNextInt()) {
+                array[i] = new VariableWire(sc.nextInt());
+            } else {
+                if (sc.hasNext()) {
+                    sc.next();
+                }
+                array[i] = new VariableWire(sc.nextInt());
+            }
+        }
+        if (sc.hasNext()) {
+            sc.next();
+        }
+        return array;
+    }
+
+    private void __phase1() {
+        this.__phase = 0;
+        __declareGenericConstants();
+        __init();
+        __defineInputs();
+        __defineVerifiedWitnesses();
+        __defineWitnesses();
+        outsource();
+        __checkWitnesses();
+        __defineOutputs();
+
+        for (SmartMemory<?> mem : this.__memoryList) {
+            mem.analyzeWorkload();
+        }
+
+
+        this.__stateCounterPhase1 = this.__stateCounter;
+        __clear();
+        log.info("Phase 1: Analysis Completed!");
+
+        this.__phase++;
+    }
 
     private void __phase2() {
         __declareGenericConstants();
@@ -175,34 +287,10 @@ public abstract class CircuitGenerator extends backend.structure.CircuitGenerato
         }
     }
 
-
     private void __checkWitnesses() {
         for (IAuxType t : this.__verifiedProverAux) {
             t.verifyRange();
         }
-    }
-
-    private void __phase1() {
-        this.__phase = 0;
-        __declareGenericConstants();
-        __init();
-        __defineInputs();
-        __defineVerifiedWitnesses();
-        __defineWitnesses();
-        outsource();
-        __checkWitnesses();
-        __defineOutputs();
-
-        for (SmartMemory<?> mem : this.__memoryList) {
-            mem.analyzeWorkload();
-        }
-
-
-        this.__stateCounterPhase1 = this.__stateCounter;
-        __clear();
-        System.out.println("Phase 1: Analysis Completed!");
-
-        this.__phase++;
     }
 
 
@@ -379,10 +467,9 @@ public abstract class CircuitGenerator extends backend.structure.CircuitGenerato
         }
     }
 
-    public void __writeCircuitFile(String arg) {
+    public void __writeCircuitFile() {
         try {
-            PrintWriter printWriter = new PrintWriter(new BufferedWriter(new FileWriter(String.valueOf(Config.outputFilesPath) + (
-                    Config.outputFilesPath.isEmpty() ? "" : File.separator) + __getName() + arg + ".arith")));
+            PrintWriter printWriter = new PrintWriter(new BufferedWriter(new FileWriter(Configs.circuitPath)));
 
             printWriter.println("total " + this.__currentWireId);
             for (Instruction e : this.__evaluationQueue.keySet()) {
@@ -400,11 +487,18 @@ public abstract class CircuitGenerator extends backend.structure.CircuitGenerato
     public void __printCircuit() {
         for (Instruction e : this.__evaluationQueue.keySet()) {
             if (e.doneWithinCircuit()) {
-                System.out.println(e);
+                log.debug(e);
             }
         }
     }
 
+    private void declareGenericConstants() {
+        this.__oneWire = new ConstantWire(this.__currentWireId++, BigInteger.ONE);
+//        this.__knownConstantWires.put(BigInteger.ONE, this.__oneWire);
+//        __addToEvaluationQueue(new WireLabelInstruction(WireLabelInstruction.LabelType.input, this.__oneWire, new String[]{"The one-input wire."}));
+//        this.__inWires.add(this.__oneWire);
+        this.__zeroWire = this.__oneWire.mul(0L, new String[0]);
+    }
 
     private void __declareGenericConstants() {
         this.__oneWire = new ConstantWire(this.__currentWireId++, BigInteger.ONE);
@@ -412,12 +506,7 @@ public abstract class CircuitGenerator extends backend.structure.CircuitGenerato
         __addToEvaluationQueue(new WireLabelInstruction(WireLabelInstruction.LabelType.input, this.__oneWire, new String[]{"The one-input wire."}));
         this.__inWires.add(this.__oneWire);
         this.__zeroWire = this.__oneWire.mul(0L, new String[0]);
-        super.__zeroWire = this.__zeroWire;
-        super.__oneWire = this.__oneWire;
-        super.__inWires = this.__inWires;
-        super.__knownConstantWires = this.__knownConstantWires;
     }
-
 
     public void __init() {
     }
@@ -427,7 +516,7 @@ public abstract class CircuitGenerator extends backend.structure.CircuitGenerato
         if (!sampleRun.isEnabled()) {
             return;
         }
-        System.out.println("Running Sample Run: " + sampleRun.getName());
+        log.info("Running sample: " + sampleRun.getName());
 
         this.__knownConstantWires.clear();
         this.__knownConstantWires.put(BigInteger.ONE, this.__oneWire);
@@ -435,28 +524,26 @@ public abstract class CircuitGenerator extends backend.structure.CircuitGenerato
 
         sampleRun.pre();
 
-        System.out.println("Evaluating Input on the circuit " + (Config.multivariateExpressionMinimization ? "without multivariate optimizations attempts" : ""));
+        log.debug("Evaluating Input on the circuit " + (Config.multivariateExpressionMinimization ? "without multivariate optimizations attempts" : ""));
         this.__circuitEvaluator.evaluate(this.__nonOptimizedEvaluationQueue);
         sampleRun.post();
 
 
-        System.out.println("Evaluation Done ");
+        log.info("Evaluation Done ");
 
         if (Config.multivariateExpressionMinimization) {
-            System.out.println("Evaluating Input on the circuit after multivariate optimizations attempt");
+            log.info("Evaluating Input on the circuit after multivariate optimizations attempt");
             this.__knownConstantWires.clear();
             this.__knownConstantWires.put(BigInteger.ONE, this.__oneWire);
             this.__circuitEvaluator = this.__circuitOptimizer.mapFromOldEvaluationSeq(this.__circuitEvaluator);
-
-
-            System.out.println("Evaluation Done");
-            System.out.println("[Pass] Output values after multivariate optimizations match the previous output of the circuit.");
+            log.info("Evaluation Done");
+            log.info("[Pass] Output values after multivariate optimizations match the previous output of the circuit.");
         }
 
 
-        System.out.println("Sample Run: " + sampleRun.getName() + " finished!");
+        log.info("Sample Run: " + sampleRun.getName() + " finished!");
 
-        if (Config.writeCircuits) {
+        if (Configs.writeInputs) {
             __prepInputFile(String.valueOf(sampleRun.getName()) + (Config.multivariateExpressionMinimization ? "_optimized" : ""));
         }
     }
@@ -539,8 +626,8 @@ public abstract class CircuitGenerator extends backend.structure.CircuitGenerato
     }
 
     public void __printState(String message) {
-        System.out.println("\nGenerator State @ " + message);
-        System.out.println("\tCurrent Number of Multiplication Gates  :: " + this.__numOfConstraints + "\n");
+        log.debug("\nGenerator State @ " + message);
+        log.debug("\tCurrent Number of Multiplication Gates  :: " + this.__numOfConstraints + "\n");
     }
 
     public int __getNumOfConstraints() {

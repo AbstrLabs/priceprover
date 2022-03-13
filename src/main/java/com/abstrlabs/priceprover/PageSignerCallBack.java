@@ -53,7 +53,7 @@ public class PageSignerCallBack implements Callable<Integer> {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e);
             return -2;
         }
     }

@@ -1,9 +1,6 @@
 package com.abstrlabs.priceprover;
 
 import lombok.extern.log4j.Log4j2;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.config.Configurator;
 import picocli.CommandLine;
 
 import java.util.concurrent.Callable;
@@ -64,20 +61,8 @@ public class PriceProver implements Callable<Integer> {
     // that first calls the init() method,
     // and then delegates to the default execution strategy.
     int executionStrategy(CommandLine.ParseResult parseResult) {
-        configureLoggers();
+        Configs.setConfig(asset, firstTime, verbosity.length);
         return new CommandLine.RunLast().execute(parseResult); // default execution strategy
-    }
-
-    private void configureLoggers() {
-        if (verbosity.length >= 3) {
-            Configurator.setAllLevels(LogManager.getRootLogger().getName(), Level.TRACE);
-        } else if (verbosity.length == 2) {
-            Configurator.setAllLevels(LogManager.getRootLogger().getName(), Level.DEBUG);
-        } else if (verbosity.length == 1) {
-            Configurator.setAllLevels(LogManager.getRootLogger().getName(), Level.INFO);
-        } else {
-            Configurator.setAllLevels(LogManager.getRootLogger().getName(), Level.WARN);
-        }
     }
 
     public static void main(String[] args) {
