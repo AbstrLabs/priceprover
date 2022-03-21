@@ -48,7 +48,7 @@ public class Configs{
         assetTimePath = String.valueOf(Paths.get(outputPath, assetTime));
 
         try {
-            Files.createDirectories(Path.of(assetTimePath));
+            Files.createDirectories(Paths.get(assetTimePath));
             log.debug("assetTimePath created successfully");
         } catch (IOException e) {
             log.error(e);
