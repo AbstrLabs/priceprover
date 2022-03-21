@@ -1,5 +1,6 @@
 package com.abstrlabs.priceprover;
 
+import com.abstrlabs.priceprover.circuits.TLSNotaryCheck;
 import com.abstrlabs.priceprover.util.Utility;
 import com.abstrlabs.priceprover.util.Crypto;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -11,7 +12,6 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 import java.io.File;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
@@ -49,12 +49,7 @@ public class CircuitBuilder implements Callable<Integer> {
         parseNotaryJson(notaryFilePath);
 
         // build circuit
-        if (firstTime) {
-            new TLSNotaryCheck(notaryCheckInput, outputPath);
-        } else {
-            // todo: only translate input
-            new TLSNotaryCheck(notaryCheckInput, outputPath);
-        }
+        new TLSNotaryCheck(notaryCheckInput);
         return 0;
     }
 

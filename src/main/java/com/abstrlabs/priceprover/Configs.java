@@ -30,6 +30,12 @@ public class Configs{
 
     public static String assetTimePath = "./out/asset-yyyy-MM-dd-HH-mm-ss";
 
+    public static String inputName = "input.in";
+
+    public static String primaryInputName = "pri.in";
+
+    public static String nizkInputName = "nizk.in";
+
     public static void setConfig(String asset, boolean firstTime, int verbosity) {
         setPath(asset);
         setFirstTime(firstTime);
@@ -68,5 +74,17 @@ public class Configs{
         } else {
             Configurator.setAllLevels(LogManager.getRootLogger().getName(), Level.WARN);
         }
+    }
+
+    public static String getInputPath() {
+        return String.valueOf(Paths.get(assetTimePath, inputName));
+    }
+
+    public static String getPriInputPath() {
+        return String.valueOf(Paths.get(assetTimePath, primaryInputName));
+    }
+
+    public static String getNizkInputPath() {
+        return String.valueOf(Paths.get(assetTimePath, nizkInputName));
     }
 }

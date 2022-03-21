@@ -544,7 +544,7 @@ public abstract class CircuitGenerator extends backend.structure.CircuitGenerato
         log.info("Sample Run: " + sampleRun.getName() + " finished!");
 
         if (Configs.writeInputs) {
-            __prepInputFile(String.valueOf(sampleRun.getName()) + (Config.multivariateExpressionMinimization ? "_optimized" : ""));
+            __prepInputFile(Configs.getPriInputPath());
         }
     }
 
@@ -745,9 +745,61 @@ public abstract class CircuitGenerator extends backend.structure.CircuitGenerato
         if (this.__circuitEvaluator == null) {
             throw new NullPointerException("evalCircuit() must be called before prepFiles()");
         }
-        this.__circuitEvaluator.writeInputFile(arg);
+        writeInputFile(Configs.getInputPath());
     }
 
+    public void writeInputFile(String arg) {
+        try {
+            LinkedHashMap<Instruction, Instruction> evalSequence = this.__getEvaluationQueue();
+            PrintWriter printWriter = new PrintWriter(arg);
+            Iterator var5 = evalSequence.keySet().iterator();
+
+            while(true) {
+                Instruction e;
+                do {
+                    do {
+                        if (!var5.hasNext()) {
+                            printWriter.close();
+                            return;
+                        }
+
+                        e = (Instruction)var5.next();
+                    } while(!(e instanceof WireLabelInstruction));
+                } while(((WireLabelInstruction)e).getType() != LabelType.input && ((WireLabelInstruction)e).getType() != LabelType.nizkinput);
+
+                int id = ((WireLabelInstruction)e).getWire().getWireId();
+                printWriter.println(id + " " + this.__circuitEvaluator.getAssignment()[id].toString(16));
+            }
+        } catch (Exception var7) {
+            var7.printStackTrace();
+        }
+    }
+
+    public void writeInputFile() {
+        try {
+            LinkedHashMap<Instruction, Instruction> evalSequence = this.__getEvaluationQueue();
+            BigInteger[] valueAssignment = this.__circuitEvaluator.getAssignment();
+            PrintWriter priIn = new PrintWriter(Configs.getPriInputPath());
+            PrintWriter nizkIn = new PrintWriter(Configs.getNizkInputPath());
+
+            for (Instruction e : evalSequence.keySet()) {
+                if (e instanceof WireLabelInstruction) {
+                    if (((WireLabelInstruction) e).getType() == LabelType.input) {
+                        int id = ((WireLabelInstruction) e).getWire().getWireId();
+                        priIn.println(id + " " + valueAssignment[id].toString(16));
+                    } else if (((WireLabelInstruction) e).getType() == LabelType.nizkinput) {
+                        int id = ((WireLabelInstruction) e).getWire().getWireId();
+                        nizkIn.println(id + " " + valueAssignment[id].toString(16));
+                    }
+                }
+            }
+            priIn.close();
+            nizkIn.close();
+
+        } catch (Exception e) {
+            log.error(e);
+        }
+    }
 
     public CircuitEvaluator __getCircuitEvaluator() {
         if (this.__circuitEvaluator == null) {

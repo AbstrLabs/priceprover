@@ -1,4 +1,4 @@
-package com.abstrlabs.priceprover;
+package com.abstrlabs.priceprover.circuits;
 
 import backend.config.Config;
 import backend.eval.SampleRun;
@@ -10,6 +10,8 @@ import backend.auxTypes.Bit;
 import backend.auxTypes.SmartMemory;
 import backend.auxTypes.ConditionalScopeTracker;
 import backend.auxTypes.FieldElement;
+import com.abstrlabs.priceprover.Configs;
+import com.abstrlabs.priceprover.NotaryCheckInput;
 import com.abstrlabs.priceprover.util.CircuitGenerator;
 import lombok.extern.log4j.Log4j2;
 import util.Util;
@@ -28,31 +30,31 @@ public class TLSNotaryCheck extends CircuitGenerator {
         }
         this.evaluateSampleRun(new SampleRun("Sample_Run1", true) {
             public void pre() {
-                long[] sr_padded = notaryCheckInput.sr_padded;
-                long[] ccwk = notaryCheckInput.ccwk;
-                long[] cciv = notaryCheckInput.cciv;
-                long[] cswk = notaryCheckInput.cswk;
-                long[] csiv = notaryCheckInput.csiv;
-                long[] cpms = notaryCheckInput.cpms;
-                long[] crc = notaryCheckInput.crc;
+                long[] sr_padded = notaryCheckInput.getSr_padded();
+                long[] ccwk = notaryCheckInput.getCcwk();
+                long[] cciv = notaryCheckInput.getCciv();
+                long[] cswk = notaryCheckInput.getCswk();
+                long[] csiv = notaryCheckInput.getCsiv();
+                long[] cpms = notaryCheckInput.getCpms();
+                long[] crc = notaryCheckInput.getCrc();
                 int crc_len = crc.length;
-                long[] ncwk = notaryCheckInput.ncwk;
-                long[] nciv = notaryCheckInput.nciv;
-                long[] nswk = notaryCheckInput.nswk;
-                long[] nsiv = notaryCheckInput.nsiv;
-                long[] npms = notaryCheckInput.npms;
-                long[] nt = notaryCheckInput.nt;
-                long[] epk = notaryCheckInput.epk;
-                long[] epkvf = notaryCheckInput.epkvf;
-                long[] epkvu = notaryCheckInput.epkvu;
-                long[] np = notaryCheckInput.np;
-                long[] ss = notaryCheckInput.ss;
-                long[] esbn = notaryCheckInput.esbn;
-                long[] tbs1_padded = notaryCheckInput.tbs1_padded;
-                long[] exp_ct = notaryCheckInput.exp_ct;
-                long[] tcp = notaryCheckInput.tcp;
-                long[] exp_hash = notaryCheckInput.exp_hash;
-                int cts = 407;
+                long[] ncwk = notaryCheckInput.getNcwk();
+                long[] nciv = notaryCheckInput.getNciv();
+                long[] nswk = notaryCheckInput.getNswk();
+                long[] nsiv = notaryCheckInput.getNsiv();
+                long[] npms = notaryCheckInput.getNpms();
+                long[] nt = notaryCheckInput.getNt();
+                long[] epk = notaryCheckInput.getEpk();
+                long[] epkvf = notaryCheckInput.getEpkvf();
+                long[] epkvu = notaryCheckInput.getEpkvu();
+                long[] np = notaryCheckInput.getNp();
+                long[] ss = notaryCheckInput.getSs();
+                long[] esbn = notaryCheckInput.getEsbn();
+                long[] tbs1_padded = notaryCheckInput.getTbs1_padded();
+                long[] exp_ct = notaryCheckInput.getExp_ct();
+                long[] tcp = notaryCheckInput.getTcp();
+                long[] exp_hash = notaryCheckInput.getExp_hash();
+                int cts = notaryCheckInput.getCts();
 
                 server_records_padded_u32_blocks.mapValue(BigInteger.valueOf(sr_padded.length / 64), CircuitGenerator.__getActiveCircuitGenerator().__getCircuitEvaluator());
                 for (int i = 0; i < sr_padded.length; i++) {
