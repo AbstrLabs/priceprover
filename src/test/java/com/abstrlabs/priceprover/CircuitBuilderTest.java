@@ -49,24 +49,6 @@ public class CircuitBuilderTest {
     }
 
     @Test
-    public void callCircuitBuilderVerbosityDebug(){
-        CircuitBuilder app = new CircuitBuilder();
-        CommandLine cmd = new CommandLine(app);
-        Configs.setLoggers(2);
-        int exitCode = cmd.execute("-nf", TEST_JSON_1);
-        assertEquals(exitCode, 0);
-    }
-
-    @Test
-    public void callCircuitBuilderVerbosityInfo(){
-        CircuitBuilder app = new CircuitBuilder();
-        CommandLine cmd = new CommandLine(app);
-        Configs.setLoggers(1);
-        int exitCode = cmd.execute("-nf", TEST_JSON_1);
-        assertEquals(exitCode, 0);
-    }
-
-    @Test
     public void callCircuitBuilderFirstTime(){
         CircuitBuilder app = new CircuitBuilder();
         CommandLine cmd = new CommandLine(app);
@@ -75,20 +57,39 @@ public class CircuitBuilderTest {
         assertEquals(exitCode, 0);
     }
 
-    @Test
-    public void callCircuitBuilderReadCircuit(){
-        CircuitBuilder app = new CircuitBuilder();
-        CommandLine cmd = new CommandLine(app);
-        Configs.setFirstTime(false);
-        int exitCode = cmd.execute("-nf", TEST_JSON_1);
-        assertEquals(exitCode, 0);
-    }
-
-    @Test
-    public void callCircuitBuilderWithFreshData() {
-        CircuitBuilder app = new CircuitBuilder();
-        CommandLine cmd = new CommandLine(app);
-        int exitCode = cmd.execute("-nf", TEST_JSON_2);
-        assertEquals(exitCode, 0);
-    }
+//    uncomment below tests if you need it
+//    @Test
+//    public void callCircuitBuilderVerbosityDebug(){
+//        CircuitBuilder app = new CircuitBuilder();
+//        CommandLine cmd = new CommandLine(app);
+//        Configs.setLoggers(2);
+//        int exitCode = cmd.execute("-nf", TEST_JSON_1);
+//        assertEquals(exitCode, 0);
+//    }
+//
+//    @Test
+//    public void callCircuitBuilderVerbosityInfo(){
+//        CircuitBuilder app = new CircuitBuilder();
+//        CommandLine cmd = new CommandLine(app);
+//        Configs.setLoggers(1);
+//        int exitCode = cmd.execute("-nf", TEST_JSON_1);
+//        assertEquals(exitCode, 0);
+//    }
+//
+//    @Test
+//    public void callCircuitBuilder(){
+//        CircuitBuilder app = new CircuitBuilder();
+//        CommandLine cmd = new CommandLine(app);
+//        Configs.setFirstTime(false);
+//        int exitCode = cmd.execute("-nf", TEST_JSON_1);
+//        assertEquals(exitCode, 0);
+//    }
+//
+//    @Test
+//    public void callCircuitBuilderWithFreshData() {
+//        CircuitBuilder app = new CircuitBuilder();
+//        CommandLine cmd = new CommandLine(app);
+//        int exitCode = cmd.execute("-nf", TEST_JSON_2);
+//        assertEquals(exitCode, 0);
+//    }
 }

@@ -20,6 +20,7 @@ public class LibsnarkCallBack implements Callable<Integer> {
     private static final String TRANSLATE = "translate";
     private static final String GENERATE = "generate";
     private static final String PROVE = "prove";
+    private static final String RUN_PPZKSNARK = "./depends/libsnark/run_ppzksnark";
 
     @CommandLine.Option(names = {"-op", "--outputPath"}, defaultValue = "./out", description = "output path for generated headers and notary files")
     String outputPath;
@@ -31,7 +32,7 @@ public class LibsnarkCallBack implements Callable<Integer> {
     String xjsnarkInput;
 
     @CommandLine.Option(names = {"-fi", "--firstTime"}, description = "if it is first time run")
-    boolean firstTime;
+    boolean firstTime = Configs.initializeRequired;
 
     @Override
     public Integer call() {
@@ -41,15 +42,15 @@ public class LibsnarkCallBack implements Callable<Integer> {
 
         if (firstTime) {
             missionName = "translate xjsnark circuit and input to libsnark backend";
-            commands = new String[]{"./depends/libsnark/run_ppzksnark", TRANSLATE, xjsnarkCircuit, xjsnarkInput,
+            commands = new String[]{RUN_PPZKSNARK, TRANSLATE, xjsnarkCircuit, xjsnarkInput,
                     getPath(CIRCUIT_NAME), getPath(PRIMARY_IN), getPath(AUXILIARY_IN)};
             if (ce.execute(missionName, commands)) {
                 missionName = "generate proving key and verification key";
-                commands = new String[]{"./depends/libsnark/run_ppzksnark", GENERATE, getPath(CIRCUIT_NAME),
+                commands = new String[]{RUN_PPZKSNARK, GENERATE, getPath(CIRCUIT_NAME),
                         getPath(PROVING_KEY), getPath(VERIFICATION_KEY)};
                 if (ce.execute(missionName, commands)) {
                     missionName = "generate proof";
-                    commands = new String[]{"./depends/libsnark/run_ppzksnark", PROVE, getPath(CIRCUIT_NAME),
+                    commands = new String[]{RUN_PPZKSNARK, PROVE, getPath(CIRCUIT_NAME),
                             getPath(PROVING_KEY), getPath(PRIMARY_IN), getPath(AUXILIARY_IN), getPath(PROOF)};
                     if (ce.execute(missionName, commands)) {
                         return 0;
@@ -63,11 +64,11 @@ public class LibsnarkCallBack implements Callable<Integer> {
              *   Assumptions: already have the circuit, prooving.key and verification.key
              */
             missionName = "translate xjsnark circuit and input to libsnark backend";
-            commands = new String[]{"./depends/libsnark/run_ppzksnark", TRANSLATE, xjsnarkCircuit, xjsnarkInput,
+            commands = new String[]{RUN_PPZKSNARK, TRANSLATE, xjsnarkCircuit, xjsnarkInput,
                     getPath(CIRCUIT_NAME), getPath(PRIMARY_IN), getPath(AUXILIARY_IN)};
             if (ce.execute(missionName, commands)) {
                 missionName = "generate proof";
-                commands = new String[]{"./depends/libsnark/run_ppzksnark", PROVE, getPath(CIRCUIT_NAME), getPath(PROVING_KEY),
+                commands = new String[]{RUN_PPZKSNARK, PROVE, getPath(CIRCUIT_NAME), getPath(PROVING_KEY),
                         getPath(PRIMARY_IN), getPath(AUXILIARY_IN), getPath(PROOF)};
                 if (ce.execute(missionName, commands)) {
                     return 0;

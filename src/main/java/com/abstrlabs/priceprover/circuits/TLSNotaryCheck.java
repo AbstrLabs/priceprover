@@ -20,14 +20,19 @@ import backend.eval.CircuitEvaluator;
 @Log4j2
 public class TLSNotaryCheck extends CircuitGenerator {
 
-    public TLSNotaryCheck(NotaryCheckInput notaryCheckInput) {
+    public TLSNotaryCheck() {
         super("TLSNotaryCheck");
         Config.enforceInternalDivisionNonZeroChecks = false;
-        if (Configs.writeCircuits) {
-            generateCircuit();
-        } else {
-            readCircuitFile();
-        }
+        generateCircuit();
+//      todo: after we improve the readCircuitFile performance , we can uncomment below
+//        if (Configs.writeCircuits) {
+//            generateCircuit();
+//        } else {
+//            readCircuitFile();
+//        }
+    }
+
+    public void evaluate(NotaryCheckInput notaryCheckInput) {
         this.evaluateSampleRun(new SampleRun("Sample_Run1", true) {
             public void pre() {
                 long[] sr_padded = notaryCheckInput.getSr_padded();

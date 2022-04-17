@@ -37,20 +37,12 @@ public class PriceProver implements Callable<Integer> {
         CommandLine cmd = new CommandLine(new PageSignerCallBack());
         if (cmd.execute("-as", asset, "-op", outputPath) == 0) {
             // CircuitBuilder
-            if (firstTime) {
-                cmd = new CommandLine(new CircuitBuilder());
-                if (cmd.execute("-fi", "-op", outputPath) == 0) {
-                    // LibsnarkCallBack
-                    cmd = new CommandLine(new LibsnarkCallBack());
-                    return cmd.execute("-fi");
-                }
-            } else {
-                cmd = new CommandLine(new CircuitBuilder());
-                if (cmd.execute("-op", outputPath) == 0) {
-                    // LibsnarkCallBack
-                    cmd = new CommandLine(new LibsnarkCallBack());
-                    return cmd.execute();
-                }
+            cmd = new CommandLine(new CircuitBuilder());
+            if (cmd.execute("-op", outputPath) == 0) {
+                // LibsnarkCallBack
+                cmd = new CommandLine(new LibsnarkCallBack());
+                return cmd.execute();
+                // todo: generate verifier contract
             }
         }
         return -1; // exit code

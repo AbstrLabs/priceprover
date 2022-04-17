@@ -8,7 +8,6 @@ import org.apache.logging.log4j.core.config.Configurator;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -23,6 +22,8 @@ public class Configs{
     public static boolean writeCircuits = false;
 
     public static boolean writeInputs = true;
+
+    public static boolean initializeRequired = false;
 
     public static String outputPath = "./out";
 
@@ -46,17 +47,12 @@ public class Configs{
         String timeStamp = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(new Date());
         String assetTime = asset + "-" + timeStamp;
         assetTimePath = String.valueOf(Paths.get(outputPath, assetTime));
-
-        try {
-            Files.createDirectories(Paths.get(assetTimePath));
-            log.debug("assetTimePath created successfully");
-        } catch (IOException e) {
-            log.error(e);
-        }
+        verifyFolderPath(assetTimePath);
     }
 
     public static void setFirstTime(boolean firstTime) {
         writeCircuits = firstTime;
+        initializeRequired = firstTime;
     }
 
     public static void setLoggers(int verbosity) {
@@ -77,14 +73,27 @@ public class Configs{
     }
 
     public static String getInputPath() {
+        verifyFolderPath(assetTimePath);
         return String.valueOf(Paths.get(assetTimePath, inputName));
     }
 
     public static String getPriInputPath() {
+        verifyFolderPath(assetTimePath);
         return String.valueOf(Paths.get(assetTimePath, primaryInputName));
     }
 
     public static String getNizkInputPath() {
+        verifyFolderPath(assetTimePath);
         return String.valueOf(Paths.get(assetTimePath, nizkInputName));
+    }
+
+    private static void verifyFolderPath(String folderPath) {
+        // if exist, do nothing
+        // if not exist, create one
+        try {
+            Files.createDirectories(Paths.get(folderPath));
+        } catch (IOException e) {
+            log.error(e);
+        }
     }
 }

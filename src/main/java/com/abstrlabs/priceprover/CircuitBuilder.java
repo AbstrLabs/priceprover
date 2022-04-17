@@ -36,9 +36,6 @@ public class CircuitBuilder implements Callable<Integer> {
     @Option(names = {"-nf", "--notaryfile"}, description = "notary file that usually named notary.json")
     String notaryFilePath;
 
-    @CommandLine.Option(names = {"-fi", "--firstTime"}, description = "if it is first time run")
-    boolean firstTime;
-
     @Override
     public Integer call() throws Exception {
         if (notaryFilePath == null) {
@@ -49,7 +46,11 @@ public class CircuitBuilder implements Callable<Integer> {
         parseNotaryJson(notaryFilePath);
 
         // build circuit
-        new TLSNotaryCheck(notaryCheckInput);
+        TLSNotaryCheck tls = new TLSNotaryCheck();
+
+        // evaluate
+        tls.evaluate(notaryCheckInput);
+
         return 0;
     }
 
