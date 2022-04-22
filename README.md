@@ -46,7 +46,14 @@ prove     Trigger libsnark and generate the proof
 
 
 ### Build
-(Please install [maven](https://maven.apache.org/guides/getting-started/maven-in-five-minutes.html) if you haven't). To build an executable jar:
+(Please install [maven](https://maven.apache.org/guides/getting-started/maven-in-five-minutes.html) if you haven't). 
+
+Before first build, add xjsnark-1.0.jar to local maven repository:
+```
+mvn install:install-file -Dfile=depends/akosba/xjsnark/1.0/xjsnark-1.0.jar -DgroupId=akosba -DartifactId=xjsnark -Dversion=1.0 -Dpackaging=jar
+```
+
+To build an executable jar:
 
 `mvn clean compile assembly:single`
 
