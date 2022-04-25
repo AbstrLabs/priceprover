@@ -20,7 +20,11 @@ public class LibsnarkCallBack implements Callable<Integer> {
     private static final String TRANSLATE = "translate";
     private static final String GENERATE = "generate";
     private static final String PROVE = "prove";
+    private static final String CONVERT = "convert";
     private static final String RUN_PPZKSNARK = "./depends/libsnark/run_ppzksnark";
+    private static final String PRIMARY_IN_GNARK = "primary.in.gnark";
+    private static final String VERIFICATION_KEY_GNARK = "verification.key.gnark";
+    private static final String PROOF_GNARK = "proof.gnark";
 
     @CommandLine.Option(names = {"-op", "--outputPath"}, defaultValue = "./out", description = "output path for generated headers and notary files")
     String outputPath;
@@ -33,6 +37,20 @@ public class LibsnarkCallBack implements Callable<Integer> {
 
     @CommandLine.Option(names = {"-fi", "--firstTime"}, description = "if it is first time run")
     boolean firstTime = Configs.initializeRequired;
+
+    private int convert() {
+        CommandExecutor ce = new CommandExecutor();
+        String missionName;
+        String[] commands;
+
+        missionName = "convert libsnark vk, primary input and proof to gnark format";
+        commands = new String[]{RUN_PPZKSNARK, CONVERT, getPath(PROVING_KEY), getPath(VERIFICATION_KEY), getPath(PRIMARY_IN),
+                getPath(PROOF), getPath(VERIFICATION_KEY_GNARK), getPath(PRIMARY_IN_GNARK), getPath(PROOF_GNARK)};
+        if (ce.execute(missionName, commands)) {
+            return 0;
+        };
+        return -1;
+    }
 
     @Override
     public Integer call() {
@@ -53,7 +71,7 @@ public class LibsnarkCallBack implements Callable<Integer> {
                     commands = new String[]{RUN_PPZKSNARK, PROVE, getPath(CIRCUIT_NAME),
                             getPath(PROVING_KEY), getPath(PRIMARY_IN), getPath(AUXILIARY_IN), getPath(PROOF)};
                     if (ce.execute(missionName, commands)) {
-                        return 0;
+                        return convert();
                     };
                 }
             }
@@ -71,7 +89,7 @@ public class LibsnarkCallBack implements Callable<Integer> {
                 commands = new String[]{RUN_PPZKSNARK, PROVE, getPath(CIRCUIT_NAME), getPath(PROVING_KEY),
                         getPath(PRIMARY_IN), getPath(AUXILIARY_IN), getPath(PROOF)};
                 if (ce.execute(missionName, commands)) {
-                    return 0;
+                    return convert();
                 }
             }
         }
