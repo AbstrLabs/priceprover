@@ -12,6 +12,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
@@ -22,6 +23,7 @@ public class CircuitBuilder implements Callable<Integer> {
 
     public NotaryCheckInput notaryCheckInput = new NotaryCheckInput();
 
+    private static final String INPUT_BEFORE_HASH_FILE_NAME = "before_hash.in";
     private static final String NOTARY_FILE_NAME = "notary.json";
     private static final String NOTARY_PUBKEY = "-----BEGIN PUBLIC KEY-----\n" +
             "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEAp3iALChsj8lOkEpY1F5BeCMcyd6\n" +
@@ -50,6 +52,9 @@ public class CircuitBuilder implements Callable<Integer> {
 
         // evaluate
         tls.evaluate(notaryCheckInput);
+
+        // write input before hash to file
+        writeInputBeforeHash();
 
         return 0;
     }
@@ -135,6 +140,15 @@ public class CircuitBuilder implements Callable<Integer> {
         int content_end = plainText.lastIndexOf("}");
         byte[] content = Arrays.copyOfRange(plainText.getBytes(), content_start, content_end + 1);
         return Utility.toLongArray(content);
+    }
+
+    private void writeInputBeforeHash() throws Exception {
+        FileOutputStream inputBeforeHashFile = new FileOutputStream(getPath(INPUT_BEFORE_HASH_FILE_NAME));
+        inputBeforeHashFile.write(Utility.toByteArray(notaryCheckInput.tcp));
+    }
+
+    private String getPath(String fileName) {
+        return String.valueOf(Paths.get(outputPath, fileName));
     }
 
     public static void main(String[] args) {
