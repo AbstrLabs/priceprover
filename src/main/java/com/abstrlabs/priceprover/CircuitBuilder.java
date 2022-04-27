@@ -144,7 +144,7 @@ public class CircuitBuilder implements Callable<Integer> {
 
     private void writeInputBeforeHash() throws Exception {
         FileOutputStream inputBeforeHashFile = new FileOutputStream(getPath(INPUT_BEFORE_HASH_FILE_NAME));
-        inputBeforeHashFile.write(Utility.toByteArray(notaryCheckInput.tcp));
+        inputBeforeHashFile.write(Utility.toByteArray(Utility.concat(notaryCheckInput.nt, notaryCheckInput.exp_ct)));
     }
 
     private String getPath(String fileName) {

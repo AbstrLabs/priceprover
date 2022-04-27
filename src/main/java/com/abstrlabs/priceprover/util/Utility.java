@@ -73,6 +73,18 @@ public class Utility {
         return result;
     }
 
+    public void convertByteToHexadecimal(byte[] byteArray)
+    {
+        String hex = "";
+  
+        // Iterating through each byte in the array
+        for (byte i : byteArray) {
+            hex += String.format("%02X", i);
+        }
+  
+        System.out.print(hex);
+    }
+
     public long[] padding(long[] arr) {
         int len = arr.length;
         int n = len / 64;
