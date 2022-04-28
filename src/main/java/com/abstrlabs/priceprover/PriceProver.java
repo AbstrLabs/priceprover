@@ -10,7 +10,9 @@ import java.util.concurrent.Callable;
         description = "given the stock symbol, notarize the price and generate the proof", subcommands = {
         PageSignerCallBack.class,
         CircuitBuilder.class,
-        LibsnarkCallBack.class})
+        LibsnarkCallBack.class,
+        TransactionSubmitter.class
+    })
 public class PriceProver implements Callable<Integer> {
     @CommandLine.Option(names = {"-as", "--asset"}, defaultValue = "aIBM", description = "the asset name used to obtain the price data.")
     String asset;
@@ -29,7 +31,7 @@ public class PriceProver implements Callable<Integer> {
      *   1. PageSignerCallBack (notary the price data)
      *   2. CircuitBuilder (parse notary json, build circuit and input)
      *   3. LibsnarkCallBack (generate proof)
-     *   4. Generate verifier contract (todo)
+     *   4. TransactionSubmitter (submit transactions contain price and proof to chain)
      */
     public Integer call() {
 
@@ -41,8 +43,11 @@ public class PriceProver implements Callable<Integer> {
             if (cmd.execute("-op", outputPath) == 0) {
                 // LibsnarkCallBack
                 cmd = new CommandLine(new LibsnarkCallBack());
-                return cmd.execute();
-                // todo: generate verifier contract
+                if (cmd.execute() == 0) {
+                    // TransactionSubmitter
+                    cmd = new CommandLine(new TransactionSubmitter());
+                    return cmd.execute();
+                }
             }
         }
         return -1; // exit code

@@ -4,16 +4,13 @@ import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 
 @Log4j2
 public class CommandExecutor {
-
     @SneakyThrows
-    public boolean execute(String missionName, String[] commands) {
-        log.info(missionName + " start");
-        Runtime rt = Runtime.getRuntime();
-        Process proc = rt.exec(commands);
+    private boolean afterExecute(String missionName, Process proc) {
         boolean success = true;
 
         BufferedReader stdInput = new BufferedReader(new
@@ -41,5 +38,21 @@ public class CommandExecutor {
             log.info(missionName + " successfully");
         }
         return success;
+    }
+
+    @SneakyThrows
+    public boolean execute(String missionName, String[] commands) {
+        log.info(missionName + " start");
+        Runtime rt = Runtime.getRuntime();
+        Process proc = rt.exec(commands);
+        return afterExecute(missionName, proc);
+    }
+
+    @SneakyThrows
+    public boolean execute(String missionName, String[] commands, String[] env, File dir) {
+        log.info(missionName + " start");
+        Runtime rt = Runtime.getRuntime();
+        Process proc = rt.exec(commands, env, dir);
+        return afterExecute(missionName, proc);
     }
 }
