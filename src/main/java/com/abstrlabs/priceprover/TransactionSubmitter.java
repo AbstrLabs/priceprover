@@ -38,6 +38,7 @@ public class TransactionSubmitter implements Callable<Integer> {
                 "ALGORAND_APP_ID=" + appId,
             }, new File("./depends/algorand_zkp_verifier"))) {
                 log.info("Proof validated by zkp_verifier. Submit success");
+                log.info(ce.lastOutput);
                 return 0;
             } else {
                 return -1;

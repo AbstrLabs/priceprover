@@ -9,6 +9,8 @@ import java.io.InputStreamReader;
 
 @Log4j2
 public class CommandExecutor {
+    public static String lastOutput = "";
+
     @SneakyThrows
     private boolean afterExecute(String missionName, Process proc) {
         boolean success = true;
@@ -20,8 +22,10 @@ public class CommandExecutor {
                 InputStreamReader(proc.getErrorStream()));
 
         String s;
+        lastOutput = "";
         // Read the output from the command
         while ((s = stdInput.readLine()) != null) {
+            lastOutput += s + "\n";
             log.debug(s);
         }
         // Read any errors from the attempted command
