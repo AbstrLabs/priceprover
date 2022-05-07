@@ -13,7 +13,7 @@ import java.nio.file.Paths;
 import java.util.concurrent.Callable;
 
 @Log4j2
-@Command(name = "submit", description = "Call pagesigner-cli and notarize the stock price")
+@Command(name = "submit", description = "Sign an algorand transaction to submit the price and proof to chain")
 public class TransactionSubmitter implements Callable<Integer> {
 
     private static final String HEADERS = "headers";
