@@ -18,6 +18,7 @@ public class LibsnarkCallBack implements Callable<Integer> {
     private static final String VERIFICATION_KEY = "verification.key";
     private static final String PROOF = "proof";
     private static final String TRANSLATE = "translate";
+    private static final String TRANSLATE_INPUT = "translate_input";
     private static final String GENERATE = "generate";
     private static final String PROVE = "prove";
     private static final String CONVERT = "convert";
@@ -77,12 +78,12 @@ public class LibsnarkCallBack implements Callable<Integer> {
             }
         } else {
              /* if it's not the first time, necessary steps:
-             *   1. translate input todo : translate input only
+             *   1. translate input
              *   2. generate proof
              *   Assumptions: already have the circuit, prooving.key and verification.key
              */
-            missionName = "translate xjsnark circuit and input to libsnark backend";
-            commands = new String[]{RUN_PPZKSNARK, TRANSLATE, xjsnarkCircuit, xjsnarkInput,
+            missionName = "translate xjsnark input to libsnark backend";
+            commands = new String[]{RUN_PPZKSNARK, TRANSLATE_INPUT, xjsnarkCircuit, xjsnarkInput,
                     getPath(CIRCUIT_NAME), getPath(PRIMARY_IN), getPath(AUXILIARY_IN)};
             if (ce.execute(missionName, commands)) {
                 missionName = "generate proof";
