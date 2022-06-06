@@ -51,6 +51,12 @@ public abstract class CircuitGenerator extends backend.structure.CircuitGenerato
     private Instruction __lastInstructionAdded;
     private CircuitOptimizer __circuitOptimizer;
     private static final Pattern pattern = Pattern.compile("[< >\t]");
+    private static int reOrderId = 0;
+    private static Map<String, Integer> wireIdMapper = new HashMap<>();
+    List<Instruction> inputs = new ArrayList<>();
+    List<Instruction> nizikInputs = new ArrayList<>();
+    List<Instruction> outputs = new ArrayList<>();
+    List<Instruction> basicOps = new ArrayList<>();
 
     public CircuitGenerator(String circuitName) {
         super(circuitName);
@@ -92,9 +98,108 @@ public abstract class CircuitGenerator extends backend.structure.CircuitGenerato
             this.__circuitOptimizer = new CircuitOptimizer(this);
         }
 
+        reOrderWires();
+
+        reOrderInstructions();
+
         if (Configs.writeCircuits) {
-            __writeCircuitFile();
+            writeCircuitFile();
         }
+    }
+
+    private void reOrderWires() {
+        for (Wire inWire : this.__inWires) {
+            wireIdMapper.put(inWire.toString(), reOrderId++);
+        }
+        for (Wire proverWitnessWire : this.__proverWitnessWires) {
+            wireIdMapper.put(proverWitnessWire.toString(), reOrderId++);
+        }
+        for (Wire outWire : this.__outWires) {
+            wireIdMapper.put(outWire.toString(), reOrderId++);
+        }
+    }
+
+    private void reOrderInstructions() {
+        for (Instruction e : this.__evaluationQueue.keySet()) {
+            if (e.doneWithinCircuit()) {
+                if (e instanceof WireLabelInstruction) {
+                    switch (((WireLabelInstruction) e).getType()) {
+                        case input:
+                            inputs.add(e);
+                            break;
+                        case nizkinput:
+                            nizikInputs.add(e);
+                            break;
+                        case output:
+                            outputs.add(e);
+                    }
+                } else if (e instanceof BasicOp) {
+                    basicOps.add(e);
+                } else {
+                    log.error("Unexpected Instructions");
+                }
+            }
+        }
+    }
+
+    public void writeCircuitFile() {
+        try {
+            PrintWriter printWriter = new PrintWriter(new BufferedWriter(new FileWriter(Configs.circuitPath)));
+
+            printWriter.println("total " + this.__currentWireId);
+            for (Instruction e : inputs) {
+                printWriter.print(InstructionToString(e) + "\n");
+            }
+            for (Instruction e : nizikInputs) {
+                printWriter.print(InstructionToString(e) + "\n");
+            }
+            for (Instruction e : outputs) {
+                printWriter.print(InstructionToString(e) + "\n");
+            }
+            for (Instruction e : basicOps) {
+                printWriter.print(InstructionToString(e) + "\n");
+            }
+            printWriter.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String InstructionToString(Instruction ins) {
+        if (ins instanceof BasicOp) {
+            return basicOpToString((BasicOp) ins);
+        } else if (ins instanceof WireLabelInstruction) {
+            return labelInsToString((WireLabelInstruction) ins);
+        } else {
+            log.error("unexpected Instruction type");
+            return ins.toString();
+        }
+    }
+
+    private String basicOpToString(BasicOp basicOp) {
+        return basicOp.getOpcode() + " in "
+                + arrayToString(basicOp.getInputs(), "_") + " out "
+                + arrayToString(basicOp.getOutputs(), "_");
+    }
+
+    private String labelInsToString(WireLabelInstruction wireLabelInstruction) {
+        return wireLabelInstruction.getType() + " " + getReOrderedWire(wireLabelInstruction.getWire());
+    }
+
+    private static String arrayToString(Wire[] a, String separator) {
+        StringBuilder s = new StringBuilder();
+        for (int i = 0; i < a.length - 1; i++) {
+            s.append(getReOrderedWire(a[i])).append(separator);
+        }
+        s.append(getReOrderedWire(a[a.length - 1]));
+        return s.toString();
+    }
+
+    private static String getReOrderedWire(Wire w) {
+        if (! wireIdMapper.containsKey(w.toString())) {
+            wireIdMapper.put(w.toString(), reOrderId++);
+        }
+        return wireIdMapper.get(w.toString()).toString();
     }
 
     public void readCircuitFile() {
@@ -467,23 +572,6 @@ public abstract class CircuitGenerator extends backend.structure.CircuitGenerato
         }
     }
 
-    public void __writeCircuitFile() {
-        try {
-            PrintWriter printWriter = new PrintWriter(new BufferedWriter(new FileWriter(Configs.circuitPath)));
-
-            printWriter.println("total " + this.__currentWireId);
-            for (Instruction e : this.__evaluationQueue.keySet()) {
-                if (e.doneWithinCircuit()) {
-                    printWriter.print(e + "\n");
-                }
-            }
-            printWriter.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-
     public void __printCircuit() {
         for (Instruction e : this.__evaluationQueue.keySet()) {
             if (e.doneWithinCircuit()) {
@@ -768,7 +856,8 @@ public abstract class CircuitGenerator extends backend.structure.CircuitGenerato
                 } while(((WireLabelInstruction)e).getType() != LabelType.input && ((WireLabelInstruction)e).getType() != LabelType.nizkinput);
 
                 int id = ((WireLabelInstruction)e).getWire().getWireId();
-                printWriter.println(id + " " + this.__circuitEvaluator.getAssignment()[id].toString(16));
+                int reOrderId = wireIdMapper.get(String.valueOf(id));
+                printWriter.println(reOrderId + " " + this.__circuitEvaluator.getAssignment()[id].toString(16));
             }
         } catch (Exception var7) {
             var7.printStackTrace();
