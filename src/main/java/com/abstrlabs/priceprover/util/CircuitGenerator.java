@@ -1063,7 +1063,7 @@ public abstract class CircuitGenerator extends backend.structure.CircuitGenerato
         if (wire.getWireId() == -1) {
             Method m = wire.getClass().getDeclaredMethod("packIfNeeded", String[].class);
             m.setAccessible(true);
-            m.invoke(wire, desc);
+            m.invoke(wire, (Object) desc);
         }
     }
 }
