@@ -3,6 +3,11 @@ package com.abstrlabs.priceprover.util;
 import com.abstrlabs.priceprover.Configs;
 import com.abstrlabs.priceprover.circuits.AES128;
 import com.abstrlabs.priceprover.circuits.Sudoku9x9;
+import com.abstrlabs.priceprover.circuits.Multiplier;
+import com.abstrlabs.priceprover.circuits.SHA256;
+import com.abstrlabs.priceprover.circuits.EC_SigCheck;
+import com.abstrlabs.priceprover.circuits.XorTest;
+import com.abstrlabs.priceprover.circuits.XorTest2;
 import lombok.extern.log4j.Log4j2;
 import org.junit.Test;
 
@@ -42,6 +47,19 @@ public class CircuitGeneratorTest {
     }
 
     @Test
+    public void multiplierCircuitGeneratorWriteCircuit(){
+        Configs.writeCircuits = true;
+        Configs.circuitPath = "./circuit/multiplier.arith";
+        File circuitFile = new File(Configs.circuitPath);
+        if (circuitFile.exists()) {
+            circuitFile.delete();
+        }
+        new Multiplier();
+        assertTrue(circuitFile.exists());
+        assertTrue(circuitFile.length() > 0);
+    }
+
+    @Test
     public void aes128CircuitGeneratorWriteInput(){
         Configs.writeInputs = true;
         Configs.circuitPath = "./circuit/AES128.arith";
@@ -56,9 +74,8 @@ public class CircuitGeneratorTest {
         assertTrue(circuitFile.exists());
     }
 
-
     @Test
-    public void sudukoCircuitGeneratorWriteInput(){
+    public void sudokuCircuitGeneratorWriteInput(){
         Configs.writeCircuits = true;
         Configs.circuitPath = "./circuit/sudoku.arith";
         Configs.setPath("sudoku");
@@ -69,7 +86,80 @@ public class CircuitGeneratorTest {
         assertTrue(inputFile.length() > 0);
         log.info("Input file generated: " + inputFile.getAbsolutePath());
         assertTrue(circuitFile.exists());
+    }
 
+    @Test
+    public void multiplierCircuitGeneratorWriteInput(){
+        Configs.writeCircuits = true;
+        Configs.circuitPath = "./circuit/multiplier.arith";
+        Configs.setPath("multiplier");
+        File circuitFile = new File(Configs.circuitPath);
+        File inputFile = new File(Configs.getInputPath());
+        new Multiplier();
+        assertTrue(inputFile.exists());
+        assertTrue(inputFile.length() > 0);
+        log.info("Input file generated: " + inputFile.getAbsolutePath());
+        assertTrue(circuitFile.exists());
+    }
+
+    @Test
+    public void sha256CircuitGeneratorWriteInput(){
+        Configs.writeInputs = true;
+        Configs.circuitPath = "./circuit/SHA256.arith";
+        Configs.setPath("sha256");
+        File circuitFile = new File(Configs.circuitPath);
+        File inputFile = new File(Configs.getInputPath());
+        Configs.writeCircuits = !circuitFile.exists();
+        new SHA256();
+        assertTrue(inputFile.exists());
+        assertTrue(inputFile.length() > 0);
+        log.info("Input file generated: " + inputFile.getAbsolutePath());
+        assertTrue(circuitFile.exists());
+    }
+
+    @Test
+    public void ecSigCheckCircuitGeneratorWriteInput(){
+        Configs.writeInputs = true;
+        Configs.circuitPath = "./circuit/EC_SigCheck.arith";
+        Configs.setPath("ecsigcheck");
+        File circuitFile = new File(Configs.circuitPath);
+        File inputFile = new File(Configs.getInputPath());
+        Configs.writeCircuits = !circuitFile.exists();
+        new EC_SigCheck();
+        assertTrue(inputFile.exists());
+        assertTrue(inputFile.length() > 0);
+        log.info("Input file generated: " + inputFile.getAbsolutePath());
+        assertTrue(circuitFile.exists());
+    }
+
+    @Test
+    public void xorTestCircuitGeneratorWriteInput(){
+        Configs.writeInputs = true;
+        Configs.circuitPath = "./circuit/XorTest.arith";
+        Configs.setPath("XorTest");
+        File circuitFile = new File(Configs.circuitPath);
+        File inputFile = new File(Configs.getInputPath());
+        Configs.writeCircuits = !circuitFile.exists();
+        new XorTest();
+        assertTrue(inputFile.exists());
+        assertTrue(inputFile.length() > 0);
+        log.info("Input file generated: " + inputFile.getAbsolutePath());
+        assertTrue(circuitFile.exists());
+    }
+
+    @Test
+    public void xorTest2CircuitGeneratorWriteInput(){
+        Configs.writeInputs = true;
+        Configs.circuitPath = "./circuit/XorTest2.arith";
+        Configs.setPath("XorTest2");
+        File circuitFile = new File(Configs.circuitPath);
+        File inputFile = new File(Configs.getInputPath());
+        Configs.writeCircuits = !circuitFile.exists();
+        new XorTest2();
+        assertTrue(inputFile.exists());
+        assertTrue(inputFile.length() > 0);
+        log.info("Input file generated: " + inputFile.getAbsolutePath());
+        assertTrue(circuitFile.exists());
     }
 
     @Test
