@@ -46,8 +46,9 @@ prove     Trigger libsnark and generate the proof
 ```
 ## For User
 ### Run Executable priceprover Across OS
-1. Download executable from this [link](https://drive.google.com/file/d/1Uf7qrI6eu-GpOf_YxJdiLCRjRoAvmjYn/view?usp=sharing).
-
+1. Download executable from drive links:
+    1. Mac: [link](https://drive.google.com/file/d/1Uf7qrI6eu-GpOf_YxJdiLCRjRoAvmjYn/view?usp=sharing)
+    2. Linux: [link](https://drive.google.com/file/d/1GGR3HaDjnq5aQqn5vq1Y7MJ8t7MY3Hpn/view?usp=sharing)
 2. Run below command to show help message
 ```
 ./priceprover -h
