@@ -3,4 +3,4 @@
 	url = git@github.com:AbstrLabs/pagesigner-cli.git
 [submodule "depends/algorand_zkp_verifier"]
 	path = depends/algorand_zkp_verifier
-	url = git@github-abstrlabs:AbstrLabs/algorand_zkp_verifier.git
+	url = git@github.com:AbstrLabs/algorand_zkp_verifier.git
