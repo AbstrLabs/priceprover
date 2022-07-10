@@ -34,6 +34,9 @@ public class PageSignerCallBack implements Callable<Integer> {
             String content = "GET /query?function=GLOBAL_QUOTE&symbol=" + assetName + "&apikey=demo HTTP/1.1\n" +
                     "Host: www.alphavantage.co";
             File headersFile = new File(headersPath);
+            if (headersFile.getParentFile().mkdirs()) {
+                log.info("Headers folder created successfully");
+            }
             if (headersFile.createNewFile()) {
                 log.info("Headers file created successfully");
             };
