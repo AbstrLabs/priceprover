@@ -41,8 +41,8 @@ public class PriceProver implements Callable<Integer> {
             // CircuitBuilder
             cmd = new CommandLine(new CircuitBuilder());
             if (cmd.execute("-op", outputPath) == 0) {
-                // LibsnarkCallBack
-                cmd = new CommandLine(new LibsnarkCallBack());
+                // GnarkCallBack
+                cmd = new CommandLine(new GnarkCallBack());
                 if (cmd.execute() == 0) {
                     // TransactionSubmitter
                     cmd = new CommandLine(new TransactionSubmitter());

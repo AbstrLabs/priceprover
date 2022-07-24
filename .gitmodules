@@ -4,3 +4,6 @@
 [submodule "depends/algorand_zkp_verifier"]
 	path = depends/algorand_zkp_verifier
 	url = git@github.com:AbstrLabs/algorand_zkp_verifier.git
+[submodule "depends/xjsnark-gnark-prover"]
+	path = depends/xjsnark-gnark-prover
+	url = git@github.com:AbstrLabs/xjsnark-gnark-prover.git
