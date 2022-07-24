@@ -14,6 +14,27 @@ public class CommandExecutor {
 
     @SneakyThrows
     private boolean afterExecute(String missionName, Process proc) {
+        boolean success = checkExecuteError(missionName, proc);
+        if (success) {
+            log.info(missionName + " successfully");
+        }
+        return success;
+    }
+
+    private boolean afterExecute(String missionName, Process proc, String[] outputFiles) {
+        boolean success = checkExecuteError(missionName, proc);
+        if (outputFiles != null && !Utility.pathValidation(outputFiles)) {
+            success =false;
+            log.error(missionName + " failed");
+        }
+        if (success) {
+            log.info(missionName + " successfully");
+        }
+        return success;
+    }
+
+    @SneakyThrows
+    private boolean checkExecuteError(String missionName, Process proc) {
         boolean success = true;
 
         BufferedReader stdInput = new BufferedReader(new
@@ -38,10 +59,6 @@ public class CommandExecutor {
         while ((s = stdError.readLine()) != null) {
             log.error(s);
         }
-
-        if (success) {
-            log.info(missionName + " successfully");
-        }
         return success;
     }
 
@@ -62,33 +79,14 @@ public class CommandExecutor {
     }
 
     @SneakyThrows
-    public boolean execute(String missionName, String[] commands, String[] pathList) {
+    public boolean execute(String missionName, String[] commands, String[] inputFiles, String[] outputFiles) {
         log.info(missionName + " start");
-        if (!pathValidation(pathList)) {
+        if (inputFiles != null && !Utility.pathValidation(inputFiles)) {
             log.error(missionName + " failed");
             return false;
         }
         Runtime rt = Runtime.getRuntime();
         Process proc = rt.exec(commands);
-        return afterExecute(missionName, proc);
+        return afterExecute(missionName, proc, outputFiles);
     }
-
-    @SneakyThrows
-    public boolean pathValidation(String[] pathList) {
-        boolean success = true;
-        log.info("path validation start");
-        for (String path: pathList) {
-            File file = new File(path);
-            if (!file.exists()) {
-                log.info("path " + path + " doesn't exist");
-                success = false;
-            } else if (file.length() == 0) {
-                log.info("File " + path + " is empty");
-                success = false;
-            }
-        }
-        log.info("path validation end");
-        return success;
-    }
-
 }

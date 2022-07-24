@@ -1,9 +1,11 @@
 package com.abstrlabs.priceprover.util;
 
+import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -135,5 +137,22 @@ public class Utility {
             sb.append(b >>> i & 1);
         }
         return sb.toString();
+    }
+
+    public boolean pathValidation(String[] pathList) {
+        boolean success = true;
+        log.info("path validation start");
+        for (String path: pathList) {
+            File file = new File(path);
+            if (!file.exists()) {
+                success = false;
+                log.info("path " + path + " doesn't exist");
+            } else if (file.length() == 0) {
+                success = false;
+                log.info("File " + path + " is empty");
+            }
+        }
+        log.info("path validation end");
+        return success;
     }
 }

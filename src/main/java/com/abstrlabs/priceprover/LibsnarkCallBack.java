@@ -57,14 +57,14 @@ public class LibsnarkCallBack implements Callable<Integer> {
     public Integer call() {
         CommandExecutor ce = new CommandExecutor();
         String missionName;
-        String[] commands, pathList;
+        String[] commands, inputFiles;
 
         if (firstTime) {
             missionName = "translate xjsnark circuit and input to libsnark backend";
             commands = new String[]{RUN_PPZKSNARK, TRANSLATE, xjsnarkCircuit, xjsnarkInput,
                     getPath(CIRCUIT_NAME), getPath(PRIMARY_IN), getPath(AUXILIARY_IN)};
-            pathList = new String[]{RUN_PPZKSNARK, xjsnarkCircuit, xjsnarkInput};
-            if (ce.execute(missionName, commands, pathList)) {
+            inputFiles = new String[]{RUN_PPZKSNARK, xjsnarkCircuit, xjsnarkInput};
+            if (ce.execute(missionName, commands, inputFiles, (String[]) null)) {
                 missionName = "generate proving key and verification key";
                 commands = new String[]{RUN_PPZKSNARK, GENERATE, getPath(CIRCUIT_NAME),
                         getPath(PROVING_KEY), getPath(VERIFICATION_KEY)};
@@ -86,8 +86,8 @@ public class LibsnarkCallBack implements Callable<Integer> {
             missionName = "translate xjsnark input to libsnark backend";
             commands = new String[]{RUN_PPZKSNARK, TRANSLATE_INPUT, xjsnarkCircuit, xjsnarkInput,
                     getPath(CIRCUIT_NAME), getPath(PRIMARY_IN), getPath(AUXILIARY_IN)};
-            pathList = new String[]{RUN_PPZKSNARK, xjsnarkCircuit, xjsnarkInput};
-            if (ce.execute(missionName, commands, pathList)) {
+            inputFiles = new String[]{RUN_PPZKSNARK, xjsnarkCircuit, xjsnarkInput};
+            if (ce.execute(missionName, commands, inputFiles, (String[]) null)) {
                 missionName = "generate proof";
                 commands = new String[]{RUN_PPZKSNARK, PROVE, getPath(CIRCUIT_NAME), getPath(PROVING_KEY),
                         getPath(PRIMARY_IN), getPath(AUXILIARY_IN), getPath(PROOF)};
